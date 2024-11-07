@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ElNotification } from 'element-plus'
 import apiClient from '@/utils/apiClient'
 
 const username = ref('')
@@ -18,8 +19,22 @@ const login = async () => {
     const { access, refresh } = response.data.data
     localStorage.setItem('accessToken', access)
     localStorage.setItem('refreshToken', refresh)
+
+    // Show success message using Element Plus Notification
+    ElNotification({
+      title: 'Success',
+      message: 'Login successful!',
+      type: 'success',
+    })
   } catch (error) {
     console.error('Login error:', error)
+
+    // Show error message
+    ElNotification({
+      title: 'Error',
+      message: 'Login failed. Please check your credentials.',
+      type: 'error',
+    })
   }
 }
 
@@ -36,8 +51,22 @@ const getUserInfo = async () => {
     userInfoID.value = data.id
     userInfoName.value = data.username
     userInfoEmail.value = data.email
+
+    // Show success message
+    ElNotification({
+      title: 'Success',
+      message: 'User info retrieved successfully!',
+      type: 'success',
+    })
   } catch (error) {
     console.error('Failed to get user info:', error)
+
+    // Show error message
+    ElNotification({
+      title: 'Error',
+      message: 'Failed to get user info. Please login first.',
+      type: 'error',
+    })
   }
 }
 </script>
