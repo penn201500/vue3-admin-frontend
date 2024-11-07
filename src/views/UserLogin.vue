@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import { ElNotification } from 'element-plus'
 import apiClient from '@/utils/apiClient'
+import UserIcon from '@/components/icons/UserIcon.vue';
+import UserPasswd from '@/components/icons/UserPasswd.vue'
+
 const username = ref('')
 const password = ref('')
 const login = async () => {
@@ -36,8 +39,16 @@ const login = async () => {
     <div class="w-full max-w-md p-6 rounded-md shadow-md bg-gray-100">
       <h2 class="text-2xl font-semibold text-center mb-4">Login</h2>
       <div class="flex flex-col space-y-4">
-        <el-input v-model="username" placeholder="Username" class="w-full"></el-input>
-        <el-input v-model="password" placeholder="Password" class="w-full"></el-input>
+        <el-input v-model="username" placeholder="Username" class="w-full">
+          <template #prefix>
+            <UserIcon />
+          </template>
+        </el-input>
+        <el-input v-model="password" placeholder="Password" class="w-full">
+          <template #prefix>
+            <UserPasswd />
+          </template>
+        </el-input>
         <el-checkbox class="text-xs text-zinc-400 italic">Remember me</el-checkbox>
         <div>
           <el-button type="primary" @click="login" class="w-full block mt-4">Login</el-button>
