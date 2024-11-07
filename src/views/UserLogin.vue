@@ -38,7 +38,10 @@ const login = async () => {
       <div class="flex flex-col space-y-4">
         <el-input v-model="username" placeholder="Username" class="w-full"></el-input>
         <el-input v-model="password" placeholder="Password" class="w-full"></el-input>
-        <el-button type="primary" @click="login" class="w-full mt-4">Login</el-button>
+        <div>
+          <el-button type="primary" @click="login" class="w-full block mt-6">Login</el-button>
+          <el-checkbox class="text-sm">Remember me</el-checkbox>
+        </div>
       </div>
     </div>
   </div>
