@@ -2,12 +2,12 @@
 <template>
   <button
     @click="logout"
-    class="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-red-500"
+    class="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-red-500 group"
   >
     <el-icon>
-      <LogoutIcon class="hover:text-red-500" />
+      <LogoutIcon class="group-hover:text-red-500" />
     </el-icon>
-    <span class="text-sm">Logout</span>
+    <span class="text-sm group-hover:text-red-500">Logout</span>
   </button>
 </template>
 

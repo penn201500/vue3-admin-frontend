@@ -1,4 +1,3 @@
-<!-- src/components/Header.vue -->
 <template>
   <header
     class="flex justify-end items-center p-4 bg-white dark:bg-gray-800 shadow fixed top-0 left-0 right-0 z-10"
