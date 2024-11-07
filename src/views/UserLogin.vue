@@ -24,7 +24,7 @@ const login = async () => {
     // Show error message
     ElNotification({
       title: 'Error',
-      message: 'Login failed. Please check your credentials.',
+      message: 'Login failed. Please check your username and password.',
       type: 'error',
     })
   }

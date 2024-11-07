@@ -15,6 +15,11 @@ const router = createRouter({
       name: 'login',
       component: UserLogin,
     },
+    // Catch-all route
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/',
+    },
   ],
 })
 
