@@ -2,8 +2,8 @@
   <div class="relative">
     <header
       :class="[
-        'flex justify-end items-center p-4 bg-gray-50 dark:bg-gray-700 shadow fixed top-0 left-0 right-0 z-10 transition-transform duration-300 ease-in-out',
-        isHeaderVisible ? 'translate-y-0' : '-translate-y-[80%]',
+        'flex justify-end items-center p-4 bg-gray-50/70 dark:bg-gray-700/50 shadow fixed top-0 left-0 right-0 z-10 transition-transform duration-300 ease-in-out',
+        isHeaderVisible ? 'translate-y-0' : '-translate-y-[90%]',
       ]"
       @mouseenter="showHeader"
       @mouseleave="hideHeader"

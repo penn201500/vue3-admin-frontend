@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <div>
+  <div class="text-blue-400">
     Home
   </div>
 </template>
