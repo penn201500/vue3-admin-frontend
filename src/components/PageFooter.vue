@@ -4,7 +4,7 @@ const currentYear = new Date().getFullYear()
 </script>
 
 <template>
-  <footer class="bg-blue-800 text-gray-200 py-6 text-center">
+  <footer class="bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-300 py-6 text-center text-sm">
     <p>&copy; {{ currentYear }} Powered by Vue3. All rights reserved.</p>
   </footer>
 </template>

@@ -6,13 +6,13 @@
     xmlns:xlink="http://www.w3.org/1999/xlink"
     viewBox="0 0 1800 1800"
     fill="currentColor"
-    class="w-5 h-5 text-gray-400"
+    class="w-5 h-5 text-gray-500"
   >
     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
     <g id="SVGRepo_iconCarrier">
       <path
-        fill="#333333"
+        fill="currentColor"
         d="M899.996,13.388c-488.883,0-886.611,397.732-886.611,886.615c0,297.415,147.216,561.092,372.596,722.011
           c14.883,10.622,30.131,20.758,45.673,30.469c101.1,63.151,215.747,106.507,338.525,124.601
           c42.384,6.248,85.723,9.529,129.816,9.529c44.084,0,87.423-3.281,129.808-9.529c122.778-18.094,237.434-61.449,338.525-124.592

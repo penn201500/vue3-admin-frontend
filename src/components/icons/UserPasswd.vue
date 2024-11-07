@@ -5,7 +5,7 @@
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="currentColor"
-    class="w-5 h-5 text-gray-400"
+    class="w-5 h-5 text-gray-500"
   >
     <!-- Background Carrier -->
     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -14,7 +14,7 @@
     <!-- Icon Carrier -->
     <g id="SVGRepo_iconCarrier">
       <path
-        fill="#333333"
+        fill="currentColor"
         d="M16.95,19 C16.72,20.14 15.71,21 14.5,21 H5.5 C4.12,21 3,19.88 3,18.5 V11.5 C3,10.29 3.86,9.28 5,9.05 V8
            C5,5.24 7.24,3 10,3 C12.76,3 15,5.24 15,8 V9.05 C16.14,9.28 17,10.29 17,11.5 V13 H18.5 C19.88,13 21,14.12 21,15.5
            V16.5 C21,17.88 19.88,19 18.5,19 H16.95 Z M15.91,19 H11.5 C10.12,19 9,17.88 9,16.5 V15.5 C9,14.12 10.12,13 11.5,13
