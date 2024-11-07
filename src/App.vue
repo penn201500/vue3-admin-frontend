@@ -4,6 +4,7 @@ import PageFooter from './components/PageFooter.vue'
 import { useThemeStore } from './stores/theme'
 import { ElIcon } from 'element-plus'
 import { Moon, Sunrise } from '@element-plus/icons-vue'
+import HeaderView from './components/PageHeader.vue'
 
 // use the theme store
 const themeStore = useThemeStore()
@@ -16,6 +17,9 @@ const themeStore = useThemeStore()
       <component :is="themeStore.isDarkMode ? Sunrise : Moon" />
     </el-icon>
   </button>
+
+  <!-- Header -->
+  <HeaderView />
 
   <RouterView />
 
