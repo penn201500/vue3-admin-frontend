@@ -4,6 +4,9 @@ import apiClient from '@/utils/apiClient'
 
 const username = ref('')
 const password = ref('')
+const userInfoID = ref('')
+const userInfoName = ref('')
+const userInfoEmail = ref('')
 
 const login = async () => {
   try {
@@ -29,6 +32,10 @@ const getUserInfo = async () => {
       },
     })
     console.log('Here is the user info:', response.data.data)
+    const data = response.data.data
+    userInfoID.value = data.id
+    userInfoName.value = data.username
+    userInfoEmail.value = data.email
   } catch (error) {
     console.error('Failed to get user info:', error)
   }
@@ -36,11 +43,25 @@ const getUserInfo = async () => {
 </script>
 
 <template>
-  <div class="p-2 m-2">
-    <el-input v-model="username" placeholder="Username"></el-input>
-    <el-input v-model="password" placeholder="Password"></el-input>
-    <el-button type="primary" @click="login">Login</el-button>
-    <el-button type="success" @click="getUserInfo">Get User-info</el-button>
+  <div class="p-2">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
+      <h2 class="text-2xl font-semibold text-center mb-4">Login</h2>
+      <div class="flex flex-col space-y-4">
+        <el-input v-model="username" placeholder="Username" class="w-full"></el-input>
+        <el-input v-model="password" placeholder="Password" class="w-full"></el-input>
+        <el-button type="primary" @click="login" class="w-full mt-4">Login</el-button>
+        <el-button type="success" @click="getUserInfo" class="w-full !ml-0 mt-2"
+          >Get User Info</el-button
+        >
+      </div>
+      <!-- display user info -->
+      <div v-if="userInfoName" class="mt-6">
+        <h3 class="text-xl font-semibold mb-2">User Information</h3>
+        <p><strong>User ID: </strong> {{ userInfoID }}</p>
+        <p><strong>Username: </strong> {{ userInfoName }}</p>
+        <p><strong>Email: </strong> {{ userInfoEmail }}</p>
+      </div>
+    </div>
   </div>
 </template>
 
