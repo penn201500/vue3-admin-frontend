@@ -10,6 +10,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include cookies in requests
 })
 
 // Function to set the baseURL with the current language prefix
@@ -24,5 +25,33 @@ setApiClientLanguage(i18n.global.locale.value)
 watch(i18n.global.locale, (newLocale: string) => {
   setApiClientLanguage(newLocale)
 })
+
+// Function to get CSRF token from cookies
+function getCSRFToken() {
+  const name = 'csrftoken'
+  const cookieValue = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(name + '='))
+    ?.split('=')[1]
+  return cookieValue
+}
+
+// Add a request interceptor to include CSRF token
+apiClient.interceptors.request.use(
+  (config) => {
+    const csrfToken = getCSRFToken()
+
+    // Include CSRF token only for state-changing methods
+    if (['post', 'put', 'delete', 'patch'].includes(config.method || '')) {
+      if (csrfToken) {
+        config.headers['X-CSRFToken'] = csrfToken
+      }
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
 
 export default apiClient
