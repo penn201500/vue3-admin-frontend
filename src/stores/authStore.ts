@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import apiClient from '@/utils/apiClient'
 import { ElNotification } from 'element-plus'
 import router from '@/router'
+import { AxiosError } from 'axios'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -48,9 +49,10 @@ export const useAuthStore = defineStore('auth', {
 
           router.push('/')
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const axiosError = error as AxiosError<ErrorResponseData>
         console.error('Login error:', error)
-        const message = error.response?.data?.message || 'Login failed. Please try again.'
+        const message = axiosError.response?.data?.message || 'Login failed. Please try again.'
         ElNotification({
           title: 'Error',
           message: message,
@@ -71,9 +73,10 @@ export const useAuthStore = defineStore('auth', {
           message: 'You have been successfully logged out.',
           type: 'info',
         })
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const axiosError = error as AxiosError<ErrorResponseData>
         console.error('Logout error:', error)
-        const message = error.response?.data?.message || 'Logout failed. Please try again.'
+        const message = axiosError.response?.data?.message || 'Logout failed. Please try again.'
         ElNotification({
           title: 'Error',
           message: message,
@@ -140,4 +143,8 @@ interface User {
   id: number
   username: string
   email: string
+}
+
+interface ErrorResponseData {
+  message?: string
 }
