@@ -50,6 +50,7 @@ apiClient.interceptors.request.use(
     return config
   },
   (error) => {
+    console.error('Axios request interceptor error:', error)
     return Promise.reject(error)
   },
 )

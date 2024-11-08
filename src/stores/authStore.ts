@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     loading: false,
+    loggedOut: false,
   }),
   getters: {
     isAuthenticated: (state) => !!state.user,
@@ -16,6 +17,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     setUser(user: User) {
       this.user = user
+      this.loggedOut = false
     },
     clearAuth() {
       this.user = null
@@ -65,10 +67,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         await apiClient.post('/user/api/logout/')
         ElNotification({
-            title: 'Logged Out',
-            message: 'You have been successfully logged out.',
-            type: 'info',
-          })
+          title: 'Logged Out',
+          message: 'You have been successfully logged out.',
+          type: 'info',
+        })
       } catch (error: any) {
         console.error('Logout error:', error)
         const message = error.response?.data?.message || 'Logout failed. Please try again.'
@@ -79,6 +81,7 @@ export const useAuthStore = defineStore('auth', {
         })
       } finally {
         this.clearAuth()
+        this.loggedOut = true
         this.loading = false
         router.push('/login')
       }
@@ -125,6 +128,9 @@ export const useAuthStore = defineStore('auth', {
      * Initializes the store by fetching user info.
      */
     async initializeStore() {
+      if (this.loggedOut) {
+        return
+      }
       await this.fetchUserInfo()
     },
   },
