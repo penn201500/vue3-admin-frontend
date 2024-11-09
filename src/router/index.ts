@@ -25,9 +25,17 @@ const router = createRouter({
   ],
 })
 
+let initialAuthCheckDone = false
+
 // Navigation Guard to Protect Routes
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // Only do initial auth check once
+  if (!initialAuthCheckDone) {
+    await authStore.initializeStore()
+    initialAuthCheckDone = true
+  }
 
   if (to.meta.requiresAuth) {
     // If not authenticated, initialize the store

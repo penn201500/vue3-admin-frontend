@@ -24,11 +24,4 @@ import { useThemeStore } from '@/stores/theme'
 const themeStore = useThemeStore()
 themeStore.initializeTheme()
 
-// Initialize auth store and fetch CSRF token
-import apiClient from '@/utils/apiClient'
-
-// Fetch CSRF token before initializing the auth store
-apiClient.get('/user/api/csrf/').then(() => {
-})
-
 app.mount('#app')
