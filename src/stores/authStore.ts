@@ -85,9 +85,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await apiClient.post('/user/api/token/refresh/')
         if (response.data.code === 200) {
-          if (response.data.user) {
-            this.setUser(response.data.user)
-          }
+          await this.fetchUserInfo()
           return true
         }
         return false
