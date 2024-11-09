@@ -45,6 +45,7 @@ export const useAuthStore = defineStore('auth', {
             title: 'Success',
             message: 'Login successful!',
             type: 'success',
+            duration: 1000, // 1 second
           })
 
           router.push('/')
@@ -57,6 +58,7 @@ export const useAuthStore = defineStore('auth', {
           title: 'Error',
           message: message,
           type: 'error',
+          duration: 1000, // 1 second
         })
       } finally {
         this.loading = false
@@ -72,6 +74,7 @@ export const useAuthStore = defineStore('auth', {
           title: 'Logged Out',
           message: 'You have been successfully logged out.',
           type: 'info',
+          duration: 1000, // 1 second
         })
       } catch (error: unknown) {
         const axiosError = error as AxiosError<ErrorResponseData>
@@ -81,6 +84,7 @@ export const useAuthStore = defineStore('auth', {
           title: 'Error',
           message: message,
           type: 'error',
+          duration: 1000, // 1 second
         })
       } finally {
         this.clearAuth()
