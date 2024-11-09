@@ -29,17 +29,20 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  if (!authStore.isAuthenticated) {
-    await authStore.initializeStore()
-  }
-
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    await authStore.initializeStore() // Only initialize if needed
+  if (to.meta.requiresAuth) {
+    // If not authenticated, initialize the store
     if (!authStore.isAuthenticated) {
-      await authStore.refreshAccessToken()
+      await authStore.initializeStore()
+
+      // If still not authenticated, refresh the token
       if (!authStore.isAuthenticated) {
-        next('/login')
-        return
+        const refreshed = await authStore.refreshAccessToken()
+
+        // If still not authenticated, redirect to login
+        if (!refreshed) {
+          next('/login')
+          return
+        }
       }
     }
   }
