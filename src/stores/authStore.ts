@@ -8,14 +8,14 @@ import { AxiosError } from 'axios'
 export const useAuthStore = defineStore('auth', {
   // State Management
   state: () => ({
-    user: null as User | null,         // Stores user data
-    loading: false,                    // Tracks loading state for operations
-    csrfInitialized: false,           // Tracks if CSRF token is initialized
+    user: null as User | null, // Stores user data
+    loading: false, // Tracks loading state for operations
+    csrfInitialized: false, // Tracks if CSRF token is initialized
   }),
 
   // Computed Properties
   getters: {
-    isAuthenticated: (state) => !!state.user,  // Checks if user is authenticated
+    isAuthenticated: (state) => !!state.user, // Checks if user is authenticated
   },
 
   // Methods
@@ -36,7 +36,7 @@ export const useAuthStore = defineStore('auth', {
         title,
         message,
         type,
-        duration: 1000
+        duration: 1000,
       })
     },
 
@@ -68,15 +68,24 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.loading = true
       try {
-        await apiClient.post('/user/api/logout/')
-        this.showNotification('Success', 'Logged out successfully', 'info')
+        const response = await apiClient.post('/user/api/logout/')
+        if (response.data.code === 200) {
+          this.showNotification('Success', 'Logged out successfully', 'info')
+        } else {
+          // Handle cases where refresh token might be invalid or expired
+          this.showNotification(
+            'Info',
+            response.data.message || 'You have been logged out.',
+            'info',
+          )
+        }
       } catch (error: unknown) {
         const axiosError = error as AxiosError<ErrorResponseData>
-        const message = axiosError.response?.data?.message || 'Logout failed'
+        const message = axiosError.response?.data?.message || 'Logout failed. Please try again.'
         this.showNotification('Error', message, 'error')
       } finally {
-        this.clearAuth()
-        router.push('/login')
+        this.clearAuth() // Clears user state
+        router.push('/login') // Redirects to login page
       }
     },
 
