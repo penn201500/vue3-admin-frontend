@@ -125,8 +125,8 @@ export const useAuthStore = defineStore('auth', {
         }
       }
 
-      // Only fetch user info if we don't have user data
-      if (!this.user) {
+      // Only fetch user info if the user is authenticated
+      if (this.isAuthenticated) {
         await this.fetchUserInfo()
       }
     },
