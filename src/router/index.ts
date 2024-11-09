@@ -34,16 +34,16 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // Attempt to refresh token
-    const refreshed = await authStore.refreshAccessToken()
-    if (refreshed) {
-      next()
-    } else {
-      next('/login')
+    await authStore.initializeStore() // Only initialize if needed
+    if (!authStore.isAuthenticated) {
+      await authStore.refreshAccessToken()
+      if (!authStore.isAuthenticated) {
+        next('/login')
+        return
+      }
     }
-  } else {
-    next()
   }
+  next()
 })
 
 export default router
