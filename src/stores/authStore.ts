@@ -1,5 +1,4 @@
 // src/stores/authStore.ts
-
 import { defineStore } from 'pinia'
 import apiClient from '@/utils/apiClient'
 import { ElNotification } from 'element-plus'
@@ -7,28 +6,41 @@ import router from '@/router'
 import { AxiosError } from 'axios'
 
 export const useAuthStore = defineStore('auth', {
+  // State Management
   state: () => ({
-    user: null as User | null,
-    loading: false,
-    loggedOut: false,
+    user: null as User | null,         // Stores user data
+    loading: false,                    // Tracks loading state for operations
+    csrfInitialized: false,           // Tracks if CSRF token is initialized
   }),
+
+  // Computed Properties
   getters: {
-    isAuthenticated: (state) => !!state.user,
+    isAuthenticated: (state) => !!state.user,  // Checks if user is authenticated
   },
+
+  // Methods
   actions: {
+    // User State Management
     setUser(user: User) {
       this.user = user
-      this.loggedOut = false
     },
+
     clearAuth() {
       this.user = null
+      this.loading = false
     },
-    /**
-     * Handles user login.
-     * @param username - User's username.
-     * @param password - User's password.
-     * @param rememberMe - Whether to remember the user across sessions.
-     */
+
+    // Notification Helper
+    showNotification(title: string, message: string, type: 'success' | 'error' | 'info') {
+      ElNotification({
+        title,
+        message,
+        type,
+        duration: 1000
+      })
+    },
+
+    // Authentication Actions
     async login(username: string, password: string, rememberMe: boolean) {
       this.loading = true
       try {
@@ -40,90 +52,44 @@ export const useAuthStore = defineStore('auth', {
 
         if (response.data.code === 200) {
           this.setUser(response.data.user)
-
-          ElNotification({
-            title: 'Success',
-            message: 'Login successful!',
-            type: 'success',
-            duration: 1000, // 1 second
-          })
-
+          this.showNotification('Success', 'Login successful!', 'success')
           router.push('/')
         }
       } catch (error: unknown) {
         const axiosError = error as AxiosError<ErrorResponseData>
-        console.error('Login error:', error)
         const message = axiosError.response?.data?.message || 'Login failed. Please try again.'
-        ElNotification({
-          title: 'Error',
-          message: message,
-          type: 'error',
-          duration: 1000, // 1 second
-        })
+        this.showNotification('Error', message, 'error')
+        throw error // Propagate error for handling in components
       } finally {
         this.loading = false
       }
     },
-    /**
-     * Handles user logout.
-     */
+
     async logout() {
+      this.loading = true
       try {
         await apiClient.post('/user/api/logout/')
-        ElNotification({
-          title: 'Logged Out',
-          message: 'You have been successfully logged out.',
-          type: 'info',
-          duration: 1000, // 1 second
-        })
+        this.showNotification('Success', 'Logged out successfully', 'info')
       } catch (error: unknown) {
         const axiosError = error as AxiosError<ErrorResponseData>
-        console.error('Logout error:', error)
-        const message = axiosError.response?.data?.message || 'Logout failed. Please try again.'
-        ElNotification({
-          title: 'Error',
-          message: message,
-          type: 'error',
-          duration: 1000, // 1 second
-        })
+        const message = axiosError.response?.data?.message || 'Logout failed'
+        this.showNotification('Error', message, 'error')
       } finally {
         this.clearAuth()
-        this.loggedOut = true
-        this.loading = false
         router.push('/login')
       }
     },
-    /**
-     * Fetches authenticated user's information.
-     */
-    async fetchUserInfo() {
-      try {
-        const response = await apiClient.get('/user/api/user-info/')
-        if (response.data.code === 200) {
-          this.setUser(response.data.data)
-        } else {
-          this.clearAuth()
-        }
-      } catch (error) {
-        console.error('Failed to fetch user info:', error)
-        this.clearAuth()
-      }
-    },
-    /**
-     * Refreshes the access token using the refresh token.
-     * @returns {boolean} - Indicates if the refresh was successful.
-     */
+
+    // Token Management
     async refreshAccessToken() {
       try {
         const response = await apiClient.post('/user/api/token/refresh/')
         if (response.data.code === 200) {
-          // Optionally update user data if returned
           if (response.data.user) {
             this.setUser(response.data.user)
           }
           return true
         }
-        this.clearAuth()
         return false
       } catch (error) {
         console.error('Token refresh failed:', error)
@@ -131,18 +97,43 @@ export const useAuthStore = defineStore('auth', {
         return false
       }
     },
-    /**
-     * Initializes the store by fetching user info.
-     */
-    async initializeStore() {
-      if (this.loggedOut) {
-        return
+
+    // User Information
+    async fetchUserInfo() {
+      try {
+        const response = await apiClient.get('/user/api/user-info/')
+        if (response.data.code === 200) {
+          this.setUser(response.data.data)
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Failed to fetch user info:', error)
+        this.clearAuth()
+        return false
       }
-      await this.fetchUserInfo()
+    },
+
+    // Initialization
+    async initializeStore() {
+      if (!this.csrfInitialized) {
+        try {
+          await apiClient.get('/user/api/csrf/')
+          this.csrfInitialized = true
+        } catch (error) {
+          console.error('Failed to initialize CSRF:', error)
+        }
+      }
+
+      // Only fetch user info if we don't have user data
+      if (!this.user) {
+        await this.fetchUserInfo()
+      }
     },
   },
 })
 
+// Types
 interface User {
   id: number
   username: string
@@ -151,4 +142,5 @@ interface User {
 
 interface ErrorResponseData {
   message?: string
+  code?: number
 }
