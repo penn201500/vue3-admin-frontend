@@ -60,11 +60,6 @@ async function login() {
 
   try {
     await authStore.login(form.username, form.password, form.rememberMe)
-    ElNotification({
-      title: 'Success',
-      message: 'Login successful!',
-      type: 'success',
-    })
     router.push('/')
   } catch (error: any) {
     ElNotification({
