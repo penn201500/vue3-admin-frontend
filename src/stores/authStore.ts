@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await apiClient.post('/user/api/logout/')
         if (response.data.code === 200) {
-          showNotification('Success', 'Logged out successfully', 'info')
+          showNotification('Success', 'Logged out successfully', 'success')
         } else {
           // Handle cases where refresh token might be invalid or expired
           showNotification('Info', response.data.message || 'You have been logged out.', 'info')
