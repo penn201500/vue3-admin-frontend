@@ -1,6 +1,6 @@
 import { ElNotification } from 'element-plus';
 
-export function showNotification(title: string, message: string, type: 'success' | 'error' | 'info') {
+export function showNotification(title: string, message: string, type: 'success' | 'error' | 'warning' | 'info') {
   ElNotification({
     title,
     message,

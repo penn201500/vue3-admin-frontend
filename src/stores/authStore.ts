@@ -12,23 +12,40 @@ export const useAuthStore = defineStore('auth', {
     user: JSON.parse(localStorage.getItem('user') || 'null') as User | null, // Stores user data
     loading: false, // Tracks loading state for operations
     csrfInitialized: false, // Tracks if CSRF token is initialized
+    accessToken: null as string | null, // Store access token in memory
   }),
 
   // Computed Properties
   getters: {
-    isAuthenticated: (state) => !!state.user, // Checks if user is authenticated
+    isAuthenticated: (state) => !!state.user && !!state.accessToken,
+    tokenExpiration: (state) => {
+      if (!state.accessToken) return 0
+      try {
+        const payload = JSON.parse(atob(state.accessToken.split('.')[1]))
+        return payload.exp * 1000 // Convert to milliseconds
+      } catch {
+        return 0
+      }
+    },
+    isTokenExpired(): boolean {
+      const expiration = this.tokenExpiration
+      const currentTime = Date.now()
+      return currentTime > expiration
+    },
   },
 
   // Methods
   actions: {
     // User State Management
-    setUser(user: User) {
+    setUser(user: User, accessToken: string) {
       this.user = user
+      this.accessToken = accessToken
       localStorage.setItem('user', JSON.stringify(user))
     },
 
     clearAuth() {
       this.user = null
+      this.accessToken = null
       this.loading = false
       localStorage.removeItem('user')
     },
@@ -44,7 +61,9 @@ export const useAuthStore = defineStore('auth', {
         })
 
         if (response.data.code === 200) {
-          this.setUser(response.data.user)
+          console.log('Here', response.data)
+          const { user, access } = response.data
+          this.setUser(user, access)
           showNotification('Success', 'Login successful!', 'success')
           router.push('/')
         }
@@ -77,50 +96,91 @@ export const useAuthStore = defineStore('auth', {
     // Token Management
     async refreshAccessToken() {
       try {
-        const response = await apiClient.post('/user/api/token/refresh/')
+        const response = await apiClient.post(
+          '/user/api/token/refresh/',
+          {},
+          { withCredentials: true },
+        )
         if (response.data.code === 200) {
-          await this.fetchUserInfo()
+          this.accessToken = response.data.access
+          // showNotification('Success', 'Session refreshed', 'success')
           return true
         }
-        return false
+        throw new Error('Failed to refresh token')
       } catch (error) {
-        handleError(error)
-        this.clearAuth()
-        router.push('/login')
-        return false
+
+        console.log(`🚀 ~ file: authStore.ts:112 ~ refreshAccessToken ~ error:\n`, error);
+
+        if (error.response && error.response.status === 429) {
+          // handleError(error)
+          showNotification(
+            'Warning',
+            'You have made too many requests. Please try again later.',
+            'warning',
+          )
+          return true
+        } else {
+          handleError(error)
+          this.clearAuth()
+          // showNotification('Error', 'Session expired. Please log in again.', 'error')
+          router.push('/login')
+          return false
+        }
       }
     },
 
     // User Information
     async fetchUserInfo() {
       try {
-        const response = await apiClient.get('/user/api/user-info/')
+        const response = await apiClient.get('/user/api/user-info/', {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        })
         if (response.data.code === 200) {
-          this.setUser(response.data.data)
+          this.setUser(response.data.data, this.accessToken as string)
           return true
         }
         return false
       } catch (error) {
-        handleError(error)
-        this.clearAuth()
-        return false
+        if (error.response && error.response.status === 429) {
+          // handleError(error)
+          showNotification(
+            'Warning',
+            'You have made too many requests. Please try again later.',
+            'warning',
+          )
+          return false
+        } else {
+          handleError(error)
+          this.clearAuth()
+          return false
+        }
       }
     },
 
     // Initialization
     async initializeStore() {
-      if (!this.csrfInitialized) {
-        try {
-          await apiClient.get('/user/api/csrf/')
-          this.csrfInitialized = true
-        } catch (error) {
-          console.error('Failed to initialize CSRF:', error)
-        }
-      }
-
-      // Only fetch user info if the user is authenticated
       if (this.isAuthenticated) {
-        await this.fetchUserInfo()
+        if (!this.csrfInitialized) {
+          try {
+            await apiClient.get('/user/api/csrf/')
+            this.csrfInitialized = true
+          } catch (error) {
+            console.error('Failed to initialize CSRF:', error)
+            handleError(error)
+          }
+        }
+        if (this.isTokenExpired) {
+          const refreshed = await this.refreshAccessToken()
+          if (refreshed) {
+            await this.fetchUserInfo()
+          } else {
+            this.clearAuth()
+          }
+        } else {
+          await this.fetchUserInfo()
+        }
       }
     },
   },

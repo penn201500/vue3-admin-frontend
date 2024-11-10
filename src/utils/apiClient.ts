@@ -6,7 +6,7 @@ const backendURL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:800
 
 // Create an Axios instance
 const apiClient = axios.create({
-  baseURL: '', // We'll set this dynamically
+  baseURL: `${backendURL}/${i18n.global.locale.value}/`, // Initialize with default language
   headers: {
     'Content-Type': 'application/json',
   },

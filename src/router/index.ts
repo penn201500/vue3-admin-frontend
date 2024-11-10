@@ -38,23 +38,25 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (to.meta.requiresAuth) {
-    // If not authenticated, initialize the store
-    if (!authStore.isAuthenticated) {
-      await authStore.initializeStore()
+    if (authStore.isAuthenticated) {
+      // User is already authenticated, proceed to the route
+      next()
+    } else {
+      // If not authenticated, refresh the token
+      const refreshed = await authStore.refreshAccessToken()
 
-      // If still not authenticated, refresh the token
-      if (!authStore.isAuthenticated) {
-        const refreshed = await authStore.refreshAccessToken()
-
-        // If still not authenticated, redirect to login
-        if (!refreshed) {
-          next('/login')
-          return
-        }
+      if (refreshed) {
+        // Token refreshed successfully, proceed to the route
+        await authStore.fetchUserInfo()
+        next()
+      } else {
+        // Token refresh failed, redirect to login
+        next('/login')
       }
     }
+  } else {
+    next()
   }
-  next()
 })
 
 export default router
