@@ -1,14 +1,15 @@
 // src/stores/authStore.ts
 import { defineStore } from 'pinia'
 import apiClient from '@/utils/apiClient'
-import { ElNotification } from 'element-plus'
 import router from '@/router'
-import { AxiosError } from 'axios'
+import { handleError } from '@/utils/errorHandler'
+import type { User } from '@/types/User'
+import { showNotification } from '@/utils/showNotification'
 
 export const useAuthStore = defineStore('auth', {
   // State Management
   state: () => ({
-    user: null as User | null, // Stores user data
+    user: JSON.parse(localStorage.getItem('user') || 'null') as User | null, // Stores user data
     loading: false, // Tracks loading state for operations
     csrfInitialized: false, // Tracks if CSRF token is initialized
   }),
@@ -23,21 +24,13 @@ export const useAuthStore = defineStore('auth', {
     // User State Management
     setUser(user: User) {
       this.user = user
+      localStorage.setItem('user', JSON.stringify(user))
     },
 
     clearAuth() {
       this.user = null
       this.loading = false
-    },
-
-    // Notification Helper
-    showNotification(title: string, message: string, type: 'success' | 'error' | 'info') {
-      ElNotification({
-        title,
-        message,
-        type,
-        duration: 1000,
-      })
+      localStorage.removeItem('user')
     },
 
     // Authentication Actions
@@ -52,13 +45,11 @@ export const useAuthStore = defineStore('auth', {
 
         if (response.data.code === 200) {
           this.setUser(response.data.user)
-          this.showNotification('Success', 'Login successful!', 'success')
+          showNotification('Success', 'Login successful!', 'success')
           router.push('/')
         }
       } catch (error: unknown) {
-        const axiosError = error as AxiosError<ErrorResponseData>
-        const message = axiosError.response?.data?.message || 'Login failed. Please try again.'
-        this.showNotification('Error', message, 'error')
+        handleError(error)
         throw error // Propagate error for handling in components
       } finally {
         this.loading = false
@@ -70,19 +61,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await apiClient.post('/user/api/logout/')
         if (response.data.code === 200) {
-          this.showNotification('Success', 'Logged out successfully', 'info')
+          showNotification('Success', 'Logged out successfully', 'info')
         } else {
           // Handle cases where refresh token might be invalid or expired
-          this.showNotification(
-            'Info',
-            response.data.message || 'You have been logged out.',
-            'info',
-          )
+          showNotification('Info', response.data.message || 'You have been logged out.', 'info')
         }
       } catch (error: unknown) {
-        const axiosError = error as AxiosError<ErrorResponseData>
-        const message = axiosError.response?.data?.message || 'Logout failed. Please try again.'
-        this.showNotification('Error', message, 'error')
+        handleError(error)
       } finally {
         this.clearAuth() // Clears user state
         router.push('/login') // Redirects to login page
@@ -99,8 +84,9 @@ export const useAuthStore = defineStore('auth', {
         }
         return false
       } catch (error) {
-        console.error('Token refresh failed:', error)
+        handleError(error)
         this.clearAuth()
+        router.push('/login')
         return false
       }
     },
@@ -115,7 +101,7 @@ export const useAuthStore = defineStore('auth', {
         }
         return false
       } catch (error) {
-        console.error('Failed to fetch user info:', error)
+        handleError(error)
         this.clearAuth()
         return false
       }
@@ -139,15 +125,3 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 })
-
-// Types
-interface User {
-  id: number
-  username: string
-  email: string
-}
-
-interface ErrorResponseData {
-  message?: string
-  code?: number
-}
