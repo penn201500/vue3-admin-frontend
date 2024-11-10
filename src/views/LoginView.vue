@@ -61,10 +61,16 @@ async function login() {
   try {
     await authStore.login(form.username, form.password, form.rememberMe)
     router.push('/')
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let errorMessage = 'An unknown error occurred. Please try again.'
+
+    if (error instanceof Error) {
+      errorMessage = error.message
+    }
+
     ElNotification({
       title: 'Error',
-      message: `Login failed. ${error.message} Please try again.`,
+      message: `Login failed. ${errorMessage}`,
       type: 'error',
     })
   } finally {
