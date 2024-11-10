@@ -5,6 +5,7 @@ import router from '@/router'
 import { handleError } from '@/utils/errorHandler'
 import type { User } from '@/types/User'
 import { showNotification } from '@/utils/showNotification'
+import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', {
   // State Management
@@ -68,7 +69,13 @@ export const useAuthStore = defineStore('auth', {
           router.push('/')
         }
       } catch (error: unknown) {
-        handleError(error)
+        if (axios.isAxiosError(error)) {
+          handleError(error)
+        } else {
+          // Handle non-Axios errors
+          console.error('An unexpected error occurred:', error)
+          showNotification('Error', 'An unexpected error occurred.', 'error')
+        }
         throw error // Propagate error for handling in components
       } finally {
         this.loading = false
@@ -86,7 +93,12 @@ export const useAuthStore = defineStore('auth', {
           showNotification('Info', response.data.message || 'You have been logged out.', 'info')
         }
       } catch (error: unknown) {
-        handleError(error)
+        if (axios.isAxiosError(error)) {
+          handleError(error)
+        } else {
+          console.error('An unexpected error occurred:', error)
+          showNotification('Error', 'An unexpected error occurred.', 'error')
+        }
       } finally {
         this.clearAuth() // Clears user state
         router.push('/login') // Redirects to login page
@@ -108,21 +120,27 @@ export const useAuthStore = defineStore('auth', {
         }
         throw new Error('Failed to refresh token')
       } catch (error) {
-
-        console.log(`🚀 ~ file: authStore.ts:112 ~ refreshAccessToken ~ error:\n`, error);
-
-        if (error.response && error.response.status === 429) {
-          // handleError(error)
-          showNotification(
-            'Warning',
-            'You have made too many requests. Please try again later.',
-            'warning',
-          )
-          return true
+        if (axios.isAxiosError(error)) {
+          if (error.response && error.response.status === 429) {
+            // handleError(error)
+            showNotification(
+              'Warning',
+              'You have made too many requests. Please try again later.',
+              'warning',
+            )
+            return true
+          } else {
+            handleError(error)
+            this.clearAuth()
+            // showNotification('Error', 'Session expired. Please log in again.', 'error')
+            router.push('/login')
+            return false
+          }
         } else {
-          handleError(error)
+          // Handle non-Axios errors
+          console.error('An unexpected error occurred:', error)
+          showNotification('Error', 'An unexpected error occurred.', 'error')
           this.clearAuth()
-          // showNotification('Error', 'Session expired. Please log in again.', 'error')
           router.push('/login')
           return false
         }
@@ -142,17 +160,25 @@ export const useAuthStore = defineStore('auth', {
           return true
         }
         return false
-      } catch (error) {
-        if (error.response && error.response.status === 429) {
-          // handleError(error)
-          showNotification(
-            'Warning',
-            'You have made too many requests. Please try again later.',
-            'warning',
-          )
-          return false
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          if (error.response && error.response.status === 429) {
+            // handleError(error)
+            showNotification(
+              'Warning',
+              'You have made too many requests. Please try again later.',
+              'warning',
+            )
+            return false
+          } else {
+            handleError(error)
+            this.clearAuth()
+            return false
+          }
         } else {
-          handleError(error)
+          // Handle non-Axios errors
+          console.error('An unexpected error occurred:', error)
+          showNotification('Error', 'An unexpected error occurred.', 'error')
           this.clearAuth()
           return false
         }
@@ -166,9 +192,14 @@ export const useAuthStore = defineStore('auth', {
           try {
             await apiClient.get('/user/api/csrf/')
             this.csrfInitialized = true
-          } catch (error) {
-            console.error('Failed to initialize CSRF:', error)
-            handleError(error)
+          } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+              console.error('Failed to initialize CSRF:', error)
+              handleError(error)
+            } else {
+              console.error('An unexpected error occurred:', error)
+              showNotification('Error', 'An unexpected error occurred.', 'error')
+            }
           }
         }
         if (this.isTokenExpired) {
