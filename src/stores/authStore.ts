@@ -62,7 +62,6 @@ export const useAuthStore = defineStore('auth', {
         })
 
         if (response.data.code === 200) {
-          console.log('Here', response.data)
           const { user, access } = response.data
           this.setUser(user, access)
           showNotification('Success', 'Login successful!', 'success')
