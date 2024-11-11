@@ -2,7 +2,7 @@ import axios from 'axios'
 import { i18n } from '@/i18n'
 import { watch } from 'vue'
 
-const backendURL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:8000'
+const backendURL = import.meta.env.VITE_APP_BACKEND_URL || 'https://localhost:8000'
 
 // Create an Axios instance
 const apiClient = axios.create({
