@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { i18n } from '@/i18n'
 import { watch } from 'vue'
+import { getActivePinia } from 'pinia'
+import { useAuthStore } from '@/stores/authStore'
 
 const backendURL = import.meta.env.VITE_APP_BACKEND_URL || 'https://localhost:8000'
 
@@ -22,9 +24,12 @@ export const setApiClientLanguage = (language: string) => {
 setApiClientLanguage(i18n.global.locale.value)
 
 // Watch for language changes and update the baseURL accordingly
-watch(i18n.global.locale, (newLocale: string) => {
-  setApiClientLanguage(newLocale)
-})
+watch(
+  () => i18n.global.locale.value,
+  (newLocale: string) => {
+    setApiClientLanguage(newLocale)
+  },
+)
 
 // Function to get CSRF token from cookies
 function getCSRFToken() {
@@ -39,14 +44,21 @@ function getCSRFToken() {
 // Add a request interceptor to include CSRF token
 apiClient.interceptors.request.use(
   (config) => {
-    const csrfToken = getCSRFToken()
-
     // Include CSRF token only for state-changing methods
     if (['post', 'put', 'delete', 'patch'].includes(config.method || '')) {
+      const csrfToken = getCSRFToken()
       if (csrfToken) {
         config.headers['X-CSRFToken'] = csrfToken
       }
     }
+
+    // Include Authorization header if accessToken is available
+    const pinia = getActivePinia()
+    const authStore = useAuthStore(pinia)
+    if (authStore.accessToken) {
+      config.headers['Authorization'] = `Bearer ${authStore.accessToken}`
+    }
+
     return config
   },
   (error) => {

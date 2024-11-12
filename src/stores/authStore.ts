@@ -101,6 +101,7 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.clearAuth() // Clears user state
         router.push('/login') // Redirects to login page
+        this.loading = false
       }
     },
 
@@ -149,11 +150,7 @@ export const useAuthStore = defineStore('auth', {
     // User Information
     async fetchUserInfo() {
       try {
-        const response = await apiClient.get('/user/api/user-info/', {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        })
+        const response = await apiClient.get('/user/api/user-info/')
         if (response.data.code === 200) {
           this.setUser(response.data.data, this.accessToken as string)
           return true
