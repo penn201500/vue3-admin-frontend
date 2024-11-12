@@ -13,14 +13,14 @@ export function handleError(error: unknown) {
     if (error.response) {
       const { status, data } = error.response
       switch (status) {
-        // case 400:
-        //   showNotification('Bad Request', data.message || 'Bad request.', 'error')
-        //   break
-        // case 401:
-        //   showNotification('Unauthorized', data.message || 'Unauthorized access.', 'error')
-        //   break
-        // case 403:
-        //   showNotification('Forbidden', data.message || 'You do not have permission.', 'error')
+        case 400:
+          showNotification('Bad Request', data.message || 'Bad request.', 'error')
+          break
+        case 401:
+          showNotification('Unauthorized', data.message || 'Unauthorized access.', 'error')
+          break
+        case 403:
+          showNotification('Forbidden', data.message || 'You do not have permission.', 'error')
         //   // Optionally, clear authentication and redirect
         //   // clearAuth()
         //   // router.push('/login')
