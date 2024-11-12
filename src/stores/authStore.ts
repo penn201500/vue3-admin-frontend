@@ -14,10 +14,12 @@ export const useAuthStore = defineStore('auth', {
     loading: false, // Tracks loading state for operations
     csrfInitialized: false, // Tracks if CSRF token is initialized
     accessToken: null as string | null, // Store access token in memory
+    rateLimit: false, // Track rate limiting
   }),
 
   // Computed Properties
   getters: {
+    isLoggedIn: (state) => !!state.user, // Indicates if the user is logged in based on user data
     isAuthenticated: (state) => !!state.user && !!state.accessToken,
     tokenExpiration: (state) => {
       if (!state.accessToken) return 0
@@ -49,6 +51,7 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = null
       this.loading = false
       localStorage.removeItem('user')
+      this.rateLimit = false // Reset rate limit flag
     },
 
     // Authentication Actions
@@ -116,6 +119,7 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.code === 200) {
           this.accessToken = response.data.access
           // showNotification('Success', 'Session refreshed', 'success')
+          this.rateLimit = false // Reset rate limit flag on success
           return true
         }
         throw new Error('Failed to refresh token')
@@ -123,12 +127,8 @@ export const useAuthStore = defineStore('auth', {
         if (axios.isAxiosError(error)) {
           if (error.response && error.response.status === 429) {
             // handleError(error)
-            showNotification(
-              'Warning',
-              'You have made too many requests. Please try again later.',
-              'warning',
-            )
-            return true
+            // Process rate limiting and notification in response interceptor
+            return 'RATE_LIMIT'
           } else {
             handleError(error)
             this.clearAuth()
@@ -153,6 +153,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await apiClient.get('/user/api/user-info/')
         if (response.data.code === 200) {
           this.setUser(response.data.data, this.accessToken as string)
+          this.rateLimit = false // Reset rate limit flag on success
           return true
         }
         return false
@@ -160,11 +161,7 @@ export const useAuthStore = defineStore('auth', {
         if (axios.isAxiosError(error)) {
           if (error.response && error.response.status === 429) {
             // handleError(error)
-            showNotification(
-              'Warning',
-              'You have made too many requests. Please try again later.',
-              'warning',
-            )
+            // Process rate limiting and notification in response interceptor
             return false
           } else {
             handleError(error)
@@ -183,7 +180,7 @@ export const useAuthStore = defineStore('auth', {
 
     // Initialization
     async initializeStore() {
-      if (this.isAuthenticated) {
+      if (this.isLoggedIn) {
         if (!this.csrfInitialized) {
           try {
             await apiClient.get('/user/api/csrf/')
@@ -200,10 +197,18 @@ export const useAuthStore = defineStore('auth', {
         }
         if (this.isTokenExpired) {
           const refreshed = await this.refreshAccessToken()
-          if (refreshed) {
+          if (refreshed === true) {
             await this.fetchUserInfo()
+          } else if (refreshed === 'RATE_LIMIT') {
+            // Do not clear auth; allow user to stay logged in
+            showNotification(
+              'Warning',
+              'Session refresh rate limit reached. Please try again later.',
+              'warning',
+            )
           } else {
             this.clearAuth()
+            router.push('/login')
           }
         } else {
           await this.fetchUserInfo()

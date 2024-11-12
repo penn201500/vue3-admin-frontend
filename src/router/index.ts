@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import UserLogin from '@/views/LoginView.vue'
 import { useAuthStore } from '@/stores/authStore'
+import { showNotification } from '@/utils/showNotification'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,13 +46,25 @@ router.beforeEach(async (to, from, next) => {
       // If not authenticated, refresh the token
       const refreshed = await authStore.refreshAccessToken()
 
-      if (refreshed) {
+      if (refreshed === true) {
         // Token refreshed successfully, proceed to the route
         await authStore.fetchUserInfo()
         next()
+      } else if (refreshed === 'RATE_LIMIT') {
+        // Rate limit hit: Inform the user but do not redirect to login
+        showNotification(
+          'Warning',
+          'Session refresh rate limit reached. Please try again later.',
+          'warning',
+        )
+        // Allow the user to remain on the current route
+        next()
       } else {
-        // Token refresh failed, redirect to login
-        next('/login')
+        if (!authStore.rateLimit) {
+          // If not rate limited, redirect to login
+          // Token refresh failed, redirect to login
+          next('/login')
+        }
       }
     }
   } else {
