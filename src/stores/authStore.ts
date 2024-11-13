@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('auth', {
     csrfInitialized: false, // Tracks if CSRF token is initialized
     accessToken: null as string | null, // Store access token in memory
     rateLimit: false, // Track rate limiting
+    rememberMe: false, // Track if 'remember me' is selected
   }),
 
   // Computed Properties
@@ -40,17 +41,24 @@ export const useAuthStore = defineStore('auth', {
   // Methods
   actions: {
     // User State Management
-    setUser(user: User, accessToken: string) {
+    setUser(user: User, accessToken: string, rememberMe: boolean) {
       this.user = user
       this.accessToken = accessToken
-      localStorage.setItem('user', JSON.stringify(user))
+      this.rememberMe = rememberMe
+      if (rememberMe) {
+        localStorage.setItem('user', JSON.stringify(user))
+      } else {
+        sessionStorage.setItem('user', JSON.stringify(user))
+      }
     },
 
     clearAuth() {
       this.user = null
       this.accessToken = null
       this.loading = false
+      this.rememberMe = false
       localStorage.removeItem('user')
+      sessionStorage.removeItem('user')
       this.rateLimit = false // Reset rate limit flag
     },
 
@@ -66,7 +74,7 @@ export const useAuthStore = defineStore('auth', {
 
         if (response.data.code === 200) {
           const { user, access } = response.data
-          this.setUser(user, access)
+          this.setUser(user, access, rememberMe)
           showNotification('Success', 'Login successful!', 'success')
           router.push('/')
         }
@@ -129,6 +137,12 @@ export const useAuthStore = defineStore('auth', {
             // handleError(error)
             // Process rate limiting and notification in response interceptor
             return 'RATE_LIMIT'
+          } else if (error.response && error.response.status === 401) {
+            // Unauthorized: Refresh token is missing or invalid
+            this.clearAuth()
+            showNotification('Error', 'Session expired. Please log in again.', 'error')
+            router.push('/login')
+            return false
           } else {
             handleError(error)
             this.clearAuth()
@@ -152,7 +166,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await apiClient.get('/user/api/user-info/')
         if (response.data.code === 200) {
-          this.setUser(response.data.data, this.accessToken as string)
+          this.setUser(response.data.data, this.accessToken as string, this.rememberMe)
           this.rateLimit = false // Reset rate limit flag on success
           return true
         }
@@ -180,6 +194,15 @@ export const useAuthStore = defineStore('auth', {
 
     // Initialization
     async initializeStore() {
+      // Attempt to load user from localStorage or sessionStorage based on 'rememberMe'
+      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
+      if (!storedUser) {
+        this.clearAuth()
+        router.push('/login')
+      } else {
+        this.user = JSON.parse(storedUser) as User
+      }
+
       if (this.isLoggedIn) {
         if (!this.csrfInitialized) {
           try {
