@@ -33,5 +33,3 @@ const isLoginPage = computed(() => route.name === 'Login')
 
   <RouterView />
 </template>
-
-<style lang="scss" scoped></style>
