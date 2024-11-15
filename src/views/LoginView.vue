@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
 import UserIcon from '@/components/icons/UserIcon.vue'
@@ -8,9 +8,11 @@ import useVuelidate from '@vuelidate/core'
 import { required, minLength, maxLength } from '@vuelidate/validators'
 import { ElNotification } from 'element-plus'
 import DOMPurify from 'dompurify'
+import { useUIStore } from '@/stores/ui'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const uiStore = useUIStore()
 
 const loading = ref(false)
 
@@ -82,6 +84,15 @@ onMounted(() => {
   if (authStore.isAuthenticated) {
     router.push('/')
   }
+  // Enable Floating Header and Theme Switcher
+  uiStore.hideFloatingHeader()
+  uiStore.showThemeSwitcher()
+})
+
+onUnmounted(() => {
+  // Hide Floating Header and Theme Switcher when leaving the Login view
+  uiStore.hideFloatingHeader()
+  uiStore.hideThemeSwitcher()
 })
 </script>
 

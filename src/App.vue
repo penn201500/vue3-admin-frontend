@@ -1,37 +1,27 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
 import PageFooter from './components/PageFooter.vue'
-import { useThemeStore } from './stores/theme'
-import { ElIcon } from 'element-plus'
-import { Moon, Sunrise } from '@element-plus/icons-vue'
-import HeaderView from './components/PageHeader.vue'
-import { useUIStore } from './stores/hideThemeSwitcher'
+import { useUIStore } from './stores/ui'
 import { computed } from 'vue'
+import ThemeSwitcher from './components/ThemeSwitcher.vue'
+import FloatingHeader from './components/FloatingHeader.vue'
 
-const themeStore = useThemeStore()
 const uiStore = useUIStore()
 
-const isHeaderVisible = computed(() => uiStore.isHeaderVisible)
+// Computed properties for visibility
+const isThemeSwitcherVisible = computed(() => uiStore.isThemeSwitcherVisible)
 </script>
 
 <template>
-  <!-- mode toggle button -->
-  <button
-    v-if="!isHeaderVisible"
-    @click="themeStore.toggleDarkMode()"
-    class="fixed top-4 right-4 z-10 w-10 h-10 rounded-full  bg-gray-50 dark:bg-gray-700 shadow hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-300"
-  >
-    <el-icon>
-      <component :is="themeStore.isDarkMode ? Sunrise : Moon" />
-    </el-icon>
-  </button>
+  <!-- Theme Switcher Button -->
+  <ThemeSwitcher v-if="isThemeSwitcherVisible" />
 
-  <!-- Header -->
-  <HeaderView />
+  <!-- Floating Header -->
+  <FloatingHeader />
 
   <RouterView />
 
-  <!-- footer section -->
+  <!-- Footer section -->
   <PageFooter />
 </template>
 
