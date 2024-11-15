@@ -10,19 +10,28 @@ const uiStore = useUIStore()
 
 // Computed properties for visibility
 const isThemeSwitcherVisible = computed(() => uiStore.isThemeSwitcherVisible)
+
+// Import useRoute to access the current route
+const route = useRoute()
+
+// Computed property to check if the current route is the login page
+const isLoginPage = computed(() => route.name === 'Login')
 </script>
 
 <template>
-  <!-- Theme Switcher Button -->
-  <ThemeSwitcher v-if="isThemeSwitcherVisible" />
+  <!-- Render only when on the login page -->
+  <div v-if="isLoginPage">
+    <!-- Theme Switcher Button -->
+    <ThemeSwitcher v-if="isThemeSwitcherVisible" />
 
-  <!-- Floating Header -->
-  <FloatingHeader />
+    <!-- Floating Header -->
+    <FloatingHeader />
+
+    <!-- Footer section -->
+    <PageFooter />
+  </div>
 
   <RouterView />
-
-  <!-- Footer section -->
-  <PageFooter />
 </template>
 
 <style lang="scss" scoped></style>

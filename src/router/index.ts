@@ -15,7 +15,7 @@ const router = createRouter({
     },
     {
       path: '/login',
-      name: 'login',
+      name: 'Login',
       component: UserLogin,
     },
     // Catch-all route
