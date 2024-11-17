@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import UserLogin from '@/views/LoginView.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { showNotification } from '@/utils/showNotification'
+import NotFound from '@/components/NotFound.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,7 +22,8 @@ const router = createRouter({
     // Catch-all route
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/login',
+      name: 'NotFound',
+      component: NotFound,
     },
   ],
 })
