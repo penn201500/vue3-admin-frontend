@@ -1,6 +1,6 @@
 <template>
   <el-aside
-    :class="['bg-gray-200 transition-all duration-200 ease-in-out', { 'hidden md:block': !isMobile && isCollapsed }]"
+    :class="['bg-gray-200 overflow-hidden', { 'w-64': !isCollapsed, 'w-16': isCollapsed }]"
     :width="isCollapsed ? '64px' : '200px'"
   >
     <!-- Aside content -->
