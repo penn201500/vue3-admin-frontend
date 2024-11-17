@@ -2,10 +2,7 @@
   <el-header class="bg-blue-100 shadow-md p-4">
     <div class="flex items-center justify-between mx-auto">
       <div class="flex items-center space-x-4">
-        <el-button
-          @click="toggleCollapse"
-          class="p-2 hover:bg-blue-200 rounded-lg lg:hidden dark:text-white"
-        >
+        <el-button @click="toggleCollapse" class="p-2 hover:bg-blue-200 rounded-lg dark:text-white">
           <el-icon>
             <Menu />
           </el-icon>
