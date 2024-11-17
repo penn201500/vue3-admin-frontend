@@ -1,20 +1,19 @@
 <!-- AsideComponent.vue -->
 <template>
   <el-aside
-    :class="['bg-[#d1d1d2] text-white p-0 m-0', { 'hidden sm:block': !isMobile }]"
+    :class="['bg-gray-200 transition-all duration-200 ease-in-out', { 'hidden md:block': !isMobile && isCollapsed }]"
     :width="isCollapsed ? '64px' : '200px'"
-    style="transition: width 0.2s"
   >
     <!-- Aside content -->
     <div class="flex flex-col h-full">
       <!-- Logo or brand -->
-      <div class="p-4 py-4 bg-slate-400">
-        <span v-if="!isCollapsed" class="text-xl font-medium">Home</span>
-        <span v-else class="text-xl">H</span>
+      <div class="flex items-center justify-center p-4 bg-gray-300">
+        <span :class="{'hidden': isCollapsed}">Logo or Brand</span>
+        <span v-if="isCollapsed" class="text-center">Brand</span>
       </div>
       <!-- Navigation Menu -->
       <el-menu
-        class="border-0 w-full !bg-[#1E3A8A]"
+        class="border-0 flex-1 bg-[#1E3A8A]"
         :collapse="isCollapsed"
         background-color="#263445"
         text-color="#fff"
@@ -38,20 +37,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { ElAside, ElMenu, ElMenuItem } from 'element-plus'
 import { House, Setting } from '@element-plus/icons-vue'
+import { useHomeLayoutStore } from '@/stores/homeLayoutStore';
 
-const isCollapsed = ref(false)
+const homeLayoutStore = useHomeLayoutStore()
+const isCollapsed = computed(() => homeLayoutStore.isCollapsed)
 const isMobile = ref(false)
 
-function handleResize() {
+const handleResize = () => {
   isMobile.value = window.innerWidth <= 640
 }
+
+// Automatically collapse the sidebar on mobile
+watch(isMobile, (newVal) => {
+  homeLayoutStore.isCollapsed = newVal
+})
 
 onMounted(() => {
   window.addEventListener('resize', handleResize)
   handleResize()
+  homeLayoutStore.isCollapsed = isMobile.value
 })
 
 onBeforeUnmount(() => {
