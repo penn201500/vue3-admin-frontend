@@ -19,6 +19,7 @@
         background-color="#263445"
         text-color="#fff"
         active-text-color="#ffd04b"
+        :collapse-transition="false"
       >
         <el-menu-item index="1">
           <el-icon><House /></el-icon>
