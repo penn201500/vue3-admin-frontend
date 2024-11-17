@@ -21,7 +21,7 @@ const router = createRouter({
     // Catch-all route
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/',
+      redirect: '/login',
     },
   ],
 })
