@@ -1,4 +1,3 @@
-<!-- AsideComponent.vue -->
 <template>
   <el-aside
     :class="['bg-gray-200 transition-all duration-200 ease-in-out', { 'hidden md:block': !isMobile && isCollapsed }]"
@@ -7,9 +6,11 @@
     <!-- Aside content -->
     <div class="flex flex-col h-full">
       <!-- Logo or brand -->
-      <div class="flex items-center justify-center p-4 bg-gray-300">
-        <span :class="{'hidden': isCollapsed}">Logo or Brand</span>
-        <span v-if="isCollapsed" class="text-center">Brand</span>
+      <div class="flex items-center justify-center h-16 bg-gray-300 overflow-hidden">
+        <!-- Full Logo/Brand Text -->
+        <span v-if="!isCollapsed" class="text-lg font-semibold"> Logo or Brand Will be Here </span>
+        <!-- Simplified Logo/Brand Text -->
+        <span v-else class="text-lg"> B </span>
       </div>
       <!-- Navigation Menu -->
       <el-menu
@@ -26,7 +27,7 @@
         <el-sub-menu index="2">
           <template #title>
             <el-icon><Setting /></el-icon>
-            <span>Settings</span>
+            <span> Settings </span>
           </template>
           <el-menu-item index="2-1">Item 1</el-menu-item>
           <el-menu-item index="2-2">Item 2</el-menu-item>
@@ -40,7 +41,7 @@
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { ElAside, ElMenu, ElMenuItem } from 'element-plus'
 import { House, Setting } from '@element-plus/icons-vue'
-import { useHomeLayoutStore } from '@/stores/homeLayoutStore';
+import { useHomeLayoutStore } from '@/stores/homeLayoutStore'
 
 const homeLayoutStore = useHomeLayoutStore()
 const isCollapsed = computed(() => homeLayoutStore.isCollapsed)
