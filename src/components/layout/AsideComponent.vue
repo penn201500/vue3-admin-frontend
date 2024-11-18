@@ -1,12 +1,12 @@
 <template>
   <el-aside
-    :class="['bg-gray-200 overflow-hidden', { 'w-64': !isCollapsed, 'w-16': isCollapsed }]"
+    :class="['bg-gray-600 text-gray-100 overflow-hidden', { 'w-64': !isCollapsed, 'w-16': isCollapsed }]"
     :width="isCollapsed ? '64px' : '200px'"
   >
     <!-- Aside content -->
     <div class="flex flex-col h-full">
       <!-- Logo or brand -->
-      <div class="flex items-center justify-center h-16 bg-gray-300 overflow-hidden">
+      <div class="flex items-center justify-center h-16 text-blue-500 border-b-4 border-b-slate-500 dark:border-b-white overflow-hidden">
         <!-- Full Logo/Brand Text -->
         <span v-if="!isCollapsed" class="text-lg font-semibold"> Logo or Brand Will be Here </span>
         <!-- Simplified Logo/Brand Text -->
