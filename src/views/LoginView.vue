@@ -161,6 +161,15 @@ onUnmounted(() => {
           native-type="submit"
           >Login</el-button
         >
+
+        <div class="flex items-center justify-center mt-4 text-sm">
+          <router-link
+            to="/signup"
+            class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Don't have an account? Sign up
+          </router-link>
+        </div>
       </form>
     </div>
   </div>
