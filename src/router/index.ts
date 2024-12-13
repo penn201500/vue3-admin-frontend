@@ -4,6 +4,7 @@ import UserLogin from '@/views/LoginView.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { showNotification } from '@/utils/showNotification'
 import NotFound from '@/components/NotFound.vue'
+import SignUp from '@/views/SignUp.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,12 @@ const router = createRouter({
       name: 'Login',
       component: UserLogin,
     },
+    {
+      path: '/signup',
+      name: 'Signup',
+      component: SignUp,
+      meta: { requiresAuth: false },
+    },
     // Catch-all route
     {
       path: '/:pathMatch(.*)*',
@@ -33,6 +40,13 @@ let initialAuthCheckDone = false
 // Navigation Guard to Protect Routes
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // Don't require authentication for login and signup routes
+  if (to.path === '/login' || to.path === '/signup') {
+    console.log('Accessing auth route:', to.path)
+    next()
+    return
+  }
 
   // Only do initial auth check once
   if (!initialAuthCheckDone) {
