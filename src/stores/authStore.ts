@@ -8,6 +8,16 @@ import { showNotification } from '@/utils/showNotification'
 import axios from 'axios'
 import type { MenuItem } from '@/types/MenuItems'
 
+// Helper functions for sessionStorage management
+function saveMenusToSessionStorage(menus: MenuItem[]) {
+  sessionStorage.setItem('userMenus', JSON.stringify(menus))
+}
+
+function loadMenusFromSessionStorage(): MenuItem[] {
+  const storedMenus = sessionStorage.getItem('userMenus')
+  return storedMenus ? JSON.parse(storedMenus) : []
+}
+
 export const useAuthStore = defineStore('auth', {
   // State Management
   state: () => ({
@@ -17,7 +27,7 @@ export const useAuthStore = defineStore('auth', {
     accessToken: null as string | null, // Store access token in memory
     rateLimit: false, // Track rate limiting
     rememberMe: false, // Track if 'remember me' is selected
-    userMenus: [] as MenuItem[], // Stores user menus
+    userMenus: loadMenusFromSessionStorage() as MenuItem[], // Load menus from sessionStorage
   }),
 
   // Computed Properties
@@ -62,6 +72,7 @@ export const useAuthStore = defineStore('auth', {
       this.userMenus = []
       localStorage.removeItem('user')
       sessionStorage.removeItem('user')
+      sessionStorage.removeItem('userMenus') // Clear menus
       this.rateLimit = false // Reset rate limit flag
     },
 
@@ -70,6 +81,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await apiClient.get('/menu/user-menu/')
         if (response.data.code === 200) {
           this.userMenus = response.data.data // Store menus in a state variable
+          saveMenusToSessionStorage(this.userMenus) // Save to sessionStorage
           return true
         }
         return false
