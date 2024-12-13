@@ -26,18 +26,34 @@
         active-text-color="#ffd04b"
         :collapse-transition="false"
       >
-        <el-menu-item index="1">
-          <el-icon><House /></el-icon>
-          <span> Dashboard </span>
-        </el-menu-item>
-        <el-sub-menu index="2">
-          <template #title>
-            <el-icon><Setting /></el-icon>
-            <span> Settings </span>
-          </template>
-          <el-menu-item index="2-1">Item 1</el-menu-item>
-          <el-menu-item index="2-2">Item 2</el-menu-item>
-        </el-sub-menu>
+        <template v-for="menu in userMenus" :key="menu.id">
+          <!-- If menu has children -->
+          <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="String(menu.id)">
+            <template #title>
+              <!-- If you have icons mapped to components -->
+              <el-icon v-if="menu.icon">
+                <!-- Adjust icon component usage as needed -->
+                <component :is="getIconComponent(menu.icon)" />
+              </el-icon>
+              <span>{{ menu.name }}</span>
+            </template>
+
+            <el-menu-item v-for="child in menu.children" :key="child.id" :index="child.path">
+              <el-icon v-if="child.icon">
+                <component :is="getIconComponent(child.icon)" />
+              </el-icon>
+              <span>{{ child.name }}</span>
+            </el-menu-item>
+          </el-sub-menu>
+
+          <!-- If menu has no children -->
+          <el-menu-item v-else :index="menu.path">
+            <el-icon v-if="menu.icon">
+              <component :is="getIconComponent(menu.icon)" />
+            </el-icon>
+            <span>{{ menu.name }}</span>
+          </el-menu-item>
+        </template>
       </el-menu>
     </div>
   </el-aside>
@@ -46,8 +62,20 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { ElAside, ElMenu, ElMenuItem } from 'element-plus'
-import { House, Setting } from '@element-plus/icons-vue'
 import { useHomeLayoutStore } from '@/stores/homeLayoutStore'
+import {
+  Monitor,
+  UserFilled,
+  Setting,
+  Edit,
+  EditPen,
+  OfficeBuilding,
+} from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/authStore'
+import type { Component } from 'vue'
+
+const authStore = useAuthStore()
+const userMenus = computed(() => authStore.userMenus)
 
 const homeLayoutStore = useHomeLayoutStore()
 const isCollapsed = computed(() => homeLayoutStore.isCollapsed)
@@ -71,6 +99,19 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
 })
+
+function getIconComponent(iconName: string): Component | undefined {
+  const iconsMap: Record<string, Component> = {
+    system: Setting,
+    monitor: Monitor,
+    user: UserFilled,
+    peoples: UserFilled, // Another user-related icon if available
+    'tree-table': Edit, // Pick an appropriate icon
+    tree: OfficeBuilding, // Replace with a more suitable icon
+    post: EditPen, // Replace with a more suitable icon
+  }
+  return iconsMap[iconName] || Monitor // Default icon if not found
+}
 </script>
 
 <style lang="scss" scoped>
