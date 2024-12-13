@@ -6,6 +6,7 @@ import { handleError } from '@/utils/errorHandler'
 import type { User } from '@/types/User'
 import { showNotification } from '@/utils/showNotification'
 import axios from 'axios'
+import type { MenuItem } from '@/types/MenuItems'
 
 export const useAuthStore = defineStore('auth', {
   // State Management
@@ -16,6 +17,7 @@ export const useAuthStore = defineStore('auth', {
     accessToken: null as string | null, // Store access token in memory
     rateLimit: false, // Track rate limiting
     rememberMe: false, // Track if 'remember me' is selected
+    userMenus: [] as MenuItem[], // Stores user menus
   }),
 
   // Computed Properties
@@ -57,9 +59,24 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = null
       this.loading = false
       this.rememberMe = false
+      this.userMenus = []
       localStorage.removeItem('user')
       sessionStorage.removeItem('user')
       this.rateLimit = false // Reset rate limit flag
+    },
+
+    async fetchUserMenus() {
+      try {
+        const response = await apiClient.get('/menu/user-menu/')
+        if (response.data.code === 200) {
+          this.userMenus = response.data.data // Store menus in a state variable
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Failed to fetch user menus:', error)
+        return false
+      }
     },
 
     // Authentication Actions
@@ -77,6 +94,7 @@ export const useAuthStore = defineStore('auth', {
           this.setUser(user, access, rememberMe)
           showNotification('Success', 'Login successful!', 'success')
           router.push('/')
+          await this.fetchUserMenus() // Fetch menus after login
         }
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
