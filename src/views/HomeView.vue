@@ -11,7 +11,8 @@
 
       <!-- Main Content -->
       <el-main class="p-0 m-0">
-        <MainComponent />
+        <!-- <MainComponent /> -->
+        <TabView />
         <router-view />
       </el-main>
     </el-container>
@@ -29,5 +30,6 @@ import HeaderComponent from '@/components/layout/HeaderComponent.vue'
 import AsideComponent from '@/components/layout/AsideComponent.vue'
 import FooterComponent from '@/components/layout/FooterComponent.vue'
 import { ElContainer, ElMain } from 'element-plus'
-import MainComponent from '@/components/layout/MainComponent.vue'
+// import MainComponent from '@/components/layout/MainComponent.vue'
+import TabView from '@/components/tabs/TabView.vue'
 </script>

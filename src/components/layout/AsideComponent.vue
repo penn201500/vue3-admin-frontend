@@ -25,6 +25,7 @@
         text-color="#fff"
         active-text-color="#ffd04b"
         :collapse-transition="false"
+        @select="handleMenuSelect"
       >
         <template v-for="menu in userMenus" :key="menu.id">
           <!-- If menu has children -->
@@ -63,6 +64,8 @@
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { ElAside, ElMenu, ElMenuItem } from 'element-plus'
 import { useHomeLayoutStore } from '@/stores/homeLayoutStore'
+import { useTabStore } from '@/stores/tabStore'
+import { useRouter } from 'vue-router'
 import {
   Monitor,
   UserFilled,
@@ -73,7 +76,10 @@ import {
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/authStore'
 import type { Component } from 'vue'
+import type { MenuItem } from '@/types/Tabs'
 
+const router = useRouter()
+const tabStore = useTabStore()
 const authStore = useAuthStore()
 const userMenus = computed(() => authStore.userMenus)
 
@@ -112,6 +118,31 @@ function getIconComponent(iconName: string): Component | undefined {
   }
   return iconsMap[iconName] || Monitor // Default icon if not found
 }
+
+// Add menu selection handler
+const handleMenuSelect = (path: string) => {
+  const findMenuItem = (items: MenuItem[], targetPath: string): MenuItem | undefined => {
+    for (const item of items) {
+      if (item.path === targetPath) return item
+      if (item.children?.length) {
+        const found = findMenuItem(item.children, targetPath)
+        if (found) return found
+      }
+    }
+    return undefined
+  }
+
+  const menuItem = findMenuItem(userMenus.value, path)
+  if (menuItem && menuItem.component) {
+    tabStore.addTab({
+      ...menuItem,
+      path: path || '',  // Ensure path is never undefined
+      component: menuItem.component || ''  // Ensure component is never undefined
+    })
+    router.push(path)
+  }
+}
+
 </script>
 
 <style lang="scss" scoped>
