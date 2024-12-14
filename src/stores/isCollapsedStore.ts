@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-export const useHomeLayoutStore = defineStore('homeLayout', {
+export const useIsCollapsedStore = defineStore('isCollapsed', {
   state: () => ({
     isCollapsed: false,
   }),

@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { ElAside, ElMenu, ElMenuItem } from 'element-plus'
-import { useHomeLayoutStore } from '@/stores/homeLayoutStore'
+import { useIsCollapsedStore } from '@/stores/isCollapsedStore'
 import { useTabStore } from '@/stores/tabStore'
 import {
   Monitor,
@@ -81,7 +81,7 @@ const tabStore = useTabStore()
 const authStore = useAuthStore()
 const userMenus = computed(() => authStore.userMenus)
 
-const homeLayoutStore = useHomeLayoutStore()
+const homeLayoutStore = useIsCollapsedStore()
 const isCollapsed = computed(() => homeLayoutStore.isCollapsed)
 const isMobile = ref(false)
 

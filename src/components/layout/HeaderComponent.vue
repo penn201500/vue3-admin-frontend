@@ -66,9 +66,9 @@ import { ref, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
-import { useHomeLayoutStore } from '@/stores/homeLayoutStore'
+import { useIsCollapsedStore } from '@/stores/isCollapsedStore'
 
-const homeLayoutStore = useHomeLayoutStore()
+const homeLayoutStore = useIsCollapsedStore()
 const authStore = useAuthStore()
 const router = useRouter()
 const searchText = ref('')
