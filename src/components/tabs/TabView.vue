@@ -39,7 +39,7 @@ import { markRaw } from 'vue'
 const currentComponent = ref<Component | null>(null)
 
 // Define the components map
-const componentMap: Record<string, () => Promise<any>> = {
+const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'bizm/Department': () => import('@/views/bizm/DepartmentView.vue'),
   'bizm/DepartmentView': () => import('@/views/bizm/DepartmentView.vue'),
   'bizm/Post': () => import('@/views/bizm/PostView.vue'),

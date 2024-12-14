@@ -6,7 +6,7 @@ import { handleError } from '@/utils/errorHandler'
 import type { User } from '@/types/User'
 import { showNotification } from '@/utils/showNotification'
 import axios from 'axios'
-import type { MenuItem } from '@/types/MenuItems'
+import type { MenuItem } from '@/types/Tabs'
 
 // Helper functions for sessionStorage management
 function saveMenusToSessionStorage(menus: MenuItem[]) {
