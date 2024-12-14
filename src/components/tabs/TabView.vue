@@ -25,47 +25,31 @@
     </el-tabs>
 
     <div class="flex-1 overflow-auto p-4 bg-gray-50">
-      <keep-alive>
-        <component :is="currentComponent" />
-      </keep-alive>
+      <component :is="currentComponent" v-if="currentComponent" :key="activeTab" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch, type Component } from 'vue'
-import { useRouter } from 'vue-router'
 import { useTabStore } from '@/stores/tabStore'
 import type { TabPaneClick } from '@/types/TabPaneClick'
 import { markRaw } from 'vue'
 
-// Update the ref definition with the correct type
 const currentComponent = ref<Component | null>(null)
 
-// Update the ModuleType
-type ModuleType = {
-  [key: string]: {
-    default: Component
-  }
+// Define the components map
+const componentMap: Record<string, () => Promise<any>> = {
+  'bizm/Department': () => import('@/views/bizm/DepartmentView.vue'),
+  'bizm/DepartmentView': () => import('@/views/bizm/DepartmentView.vue'),
+  'bizm/Post': () => import('@/views/bizm/PostView.vue'),
+  'bizm/PostView': () => import('@/views/bizm/PostView.vue'),
+  'settings/user/index': () => import('@/views/settings/user/index.vue'),
+  'settings/role/index': () => import('@/views/settings/role/index.vue'),
+  'settings/menu/index': () => import('@/views/settings/menu/index.vue'),
 }
 
-const modules: ModuleType = import.meta.glob('/src/views/**/*.vue', { eager: true })
-
-const router = useRouter()
 const tabStore = useTabStore()
-
-// Initialize from sessionStorage instead of localStorage
-const initializeFromStorage = () => {
-  const savedTabs = sessionStorage.getItem('vueSysTabs')
-  const activeTabId = sessionStorage.getItem('vueSysActiveTab')
-
-  if (savedTabs) {
-    tabStore.$patch({
-      tabs: JSON.parse(savedTabs),
-      activeTabId: activeTabId || 'dashboard',
-    })
-  }
-}
 
 // Watch for changes and save to sessionStorage
 watch(
@@ -76,26 +60,71 @@ watch(
   { deep: true },
 )
 
+const loadComponent = async (componentPath: string) => {
+  console.log('Loading component path:', componentPath)
+  try {
+    if (componentPath === 'dashboard') {
+      return null
+    }
+
+    // Normalize the component path
+    const normalizedPath = componentPath.replace(/^\/+/, '')
+
+    if (normalizedPath in componentMap) {
+      const module = await componentMap[normalizedPath]()
+      return markRaw(module.default)
+    } else {
+      console.error(`Component not found in map: ${normalizedPath}`)
+      console.log('Available components:', Object.keys(componentMap))
+      return null
+    }
+  } catch (error) {
+    console.error(`Failed to load component: ${componentPath}`, error)
+    return null
+  }
+}
+
+const initializeFromStorage = () => {
+  const savedTabs = sessionStorage.getItem('vueSysTabs')
+  const activeTabId = sessionStorage.getItem('vueSysActiveTab')
+
+  if (savedTabs) {
+    tabStore.$patch({
+      tabs: JSON.parse(savedTabs),
+      activeTabId: activeTabId || 'dashboard',
+    })
+  } else {
+    tabStore.addTab({
+      id: 'dashboard',
+      title: 'Dashboard',
+      path: '/',
+      component: 'dashboard',
+      closeable: false,
+      isDefault: true,
+    })
+  }
+}
+
 watch(
   () => tabStore.activeTabId,
   async (newActiveTab) => {
+    if (!newActiveTab) return
+
     sessionStorage.setItem('vueSysActiveTab', newActiveTab)
     const activeTabData = tabStore.tabs.find((tab) => tab.id === newActiveTab)
-    if (activeTabData) {
+
+    if (activeTabData?.component) {
       try {
-        const componentPath = `/src/views/${activeTabData.component}.vue`
-        if (modules[componentPath]) {
-          currentComponent.value = markRaw(modules[componentPath].default) as Component
-        } else {
-          console.error(`Component not found: ${componentPath}`)
-          currentComponent.value = null
-        }
+        currentComponent.value = await loadComponent(activeTabData.component)
       } catch (error) {
         console.error('Failed to load component:', error)
         currentComponent.value = null
       }
+    } else {
+      currentComponent.value = null
     }
   },
+  { immediate: true },
 )
 
 const activeTab = computed({
@@ -110,7 +139,7 @@ const visibleTabs = computed(() => {
 const handleTabClick = (tab: TabPaneClick) => {
   const targetTab = tabStore.tabs.find((t) => t.id === tab.paneName)
   if (targetTab) {
-    router.push(targetTab.path)
+    tabStore.setActiveTab(tab.paneName)
   }
 }
 
@@ -118,10 +147,6 @@ const handleTabRemove = (tabId: string) => {
   const tab = tabStore.tabs.find((t) => t.id === tabId)
   if (tab && tab.closeable) {
     tabStore.removeTab(tabId)
-    const activeTab = tabStore.tabs.find((t) => t.id === tabStore.activeTabId)
-    if (activeTab) {
-      router.push(activeTab.path)
-    }
   }
 }
 

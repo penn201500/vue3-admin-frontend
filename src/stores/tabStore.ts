@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { MenuItem, TabItem } from '@/types/Tabs'
+import type { TabItem } from '@/types/Tabs'
 
 export const useTabStore = defineStore('tab', () => {
   const tabs = ref<TabItem[]>([
@@ -8,59 +8,40 @@ export const useTabStore = defineStore('tab', () => {
       id: 'dashboard',
       title: 'Dashboard',
       path: '/',
-      component: 'HomeView',
+      component: 'dashboard',
       closeable: false,
       isDefault: true,
     },
   ])
+
   const activeTabId = ref('dashboard')
   const showDefaultTab = ref(true)
 
-  // Add new tab
-  const addTab = (menuItem: MenuItem) => {
-    const tabId = menuItem.path
-    const existingTab = tabs.value.find((tab) => tab.id === tabId)
-
-    if (existingTab) {
-      activeTabId.value = tabId
-      return
+  const addTab = (tab: TabItem) => {
+    const exists = tabs.value.some((t) => t.id === tab.id)
+    if (!exists) {
+      tabs.value.push(tab)
     }
-
-    const newTab: TabItem = {
-      id: tabId,
-      title: menuItem.name,
-      path: menuItem.path,
-      component: menuItem.component || '', // Add default empty string
-      icon: menuItem.icon,
-      closeable: true,
-    }
-
-    tabs.value.push(newTab)
-    activeTabId.value = tabId
+    activeTabId.value = tab.id
   }
 
-  // Remove tab
   const removeTab = (tabId: string) => {
-    const tabIndex = tabs.value.findIndex((tab) => tab.id === tabId)
-    if (tabIndex === -1) return
-
-    // If closing active tab, switch to another tab
-    if (activeTabId.value === tabId) {
-      const nextTab = tabs.value[tabIndex - 1] || tabs.value[tabIndex + 1]
-      activeTabId.value = nextTab?.id || 'dashboard'
+    const index = tabs.value.findIndex((tab) => tab.id === tabId)
+    if (index !== -1) {
+      tabs.value.splice(index, 1)
+      if (activeTabId.value === tabId) {
+        // Set active tab to the previous tab or the first available tab
+        if (index > 0) {
+          activeTabId.value = tabs.value[index - 1].id
+        } else if (tabs.value.length > 0) {
+          activeTabId.value = tabs.value[0].id
+        }
+      }
     }
-
-    tabs.value = tabs.value.filter((tab) => tab.id !== tabId)
   }
 
-  // Set active tab
   const setActiveTab = (tabId: string) => {
     activeTabId.value = tabId
-  }
-
-  // Toggle default tab visibility
-  const toggleDefaultTab = (show: boolean) => {
-    showDefaultTab.value = show
   }
 
   return {
@@ -70,6 +51,5 @@ export const useTabStore = defineStore('tab', () => {
     addTab,
     removeTab,
     setActiveTab,
-    toggleDefaultTab,
   }
 })

@@ -65,7 +65,6 @@ import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { ElAside, ElMenu, ElMenuItem } from 'element-plus'
 import { useHomeLayoutStore } from '@/stores/homeLayoutStore'
 import { useTabStore } from '@/stores/tabStore'
-import { useRouter } from 'vue-router'
 import {
   Monitor,
   UserFilled,
@@ -78,7 +77,6 @@ import { useAuthStore } from '@/stores/authStore'
 import type { Component } from 'vue'
 import type { MenuItem } from '@/types/Tabs'
 
-const router = useRouter()
 const tabStore = useTabStore()
 const authStore = useAuthStore()
 const userMenus = computed(() => authStore.userMenus)
@@ -111,38 +109,44 @@ function getIconComponent(iconName: string): Component | undefined {
     system: Setting,
     monitor: Monitor,
     user: UserFilled,
-    peoples: UserFilled, // Another user-related icon if available
-    'tree-table': Edit, // Pick an appropriate icon
-    tree: OfficeBuilding, // Replace with a more suitable icon
-    post: EditPen, // Replace with a more suitable icon
+    peoples: UserFilled,
+    'tree-table': Edit,
+    tree: OfficeBuilding,
+    post: EditPen,
   }
-  return iconsMap[iconName] || Monitor // Default icon if not found
+  return iconsMap[iconName] || Monitor
+}
+
+// Function to find menu item by path
+const findMenuItem = (menus: MenuItem[], path: string): MenuItem | null => {
+  for (const menu of menus) {
+    if (menu.path === path) {
+      return menu
+    }
+    if (menu.children) {
+      const found = findMenuItem(menu.children, path)
+      if (found) {
+        return found
+      }
+    }
+  }
+  return null
 }
 
 // Add menu selection handler
 const handleMenuSelect = (path: string) => {
-  const findMenuItem = (items: MenuItem[], targetPath: string): MenuItem | undefined => {
-    for (const item of items) {
-      if (item.path === targetPath) return item
-      if (item.children?.length) {
-        const found = findMenuItem(item.children, targetPath)
-        if (found) return found
-      }
-    }
-    return undefined
-  }
-
   const menuItem = findMenuItem(userMenus.value, path)
-  if (menuItem && menuItem.component) {
+  if (menuItem) {
     tabStore.addTab({
-      ...menuItem,
-      path: path || '',  // Ensure path is never undefined
-      component: menuItem.component || ''  // Ensure component is never undefined
+      id: path,
+      title: menuItem.name, // Changed from title to name to match MenuItem interface
+      path: path,
+      component: menuItem.component,
+      closeable: true,
+      icon: menuItem.icon,
     })
-    router.push(path)
   }
 }
-
 </script>
 
 <style lang="scss" scoped>
