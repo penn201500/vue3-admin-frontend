@@ -16,16 +16,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/bizm/department',
-      name: 'department',
-      component: () => import('@/views/bizm/DepartmentView.vue'),
-    },
-    {
-      path: '/settings/menu',
-      name: 'menu-settings',
-      component: () => import('@/views/settings/menu/indexView.vue'),
-    },
-    {
       path: '/login',
       name: 'Login',
       component: UserLogin,
