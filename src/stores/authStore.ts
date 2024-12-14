@@ -7,6 +7,7 @@ import type { User } from '@/types/User'
 import { showNotification } from '@/utils/showNotification'
 import axios from 'axios'
 import type { MenuItem } from '@/types/Tabs'
+import { useTabStore } from './tabStore'
 
 // Helper functions for sessionStorage management
 function saveMenusToSessionStorage(menus: MenuItem[]) {
@@ -65,6 +66,8 @@ export const useAuthStore = defineStore('auth', {
     },
 
     clearAuth() {
+      const tabStore = useTabStore()
+
       this.user = null
       this.accessToken = null
       this.loading = false
@@ -73,6 +76,10 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('user')
       sessionStorage.removeItem('user')
       sessionStorage.removeItem('userMenus') // Clear menus
+
+      // Clear tabs and reset to default
+      tabStore.clearAllTabs()
+
       this.rateLimit = false // Reset rate limit flag
     },
 
@@ -140,7 +147,7 @@ export const useAuthStore = defineStore('auth', {
           showNotification('Error', 'An unexpected error occurred.', 'error')
         }
       } finally {
-        this.clearAuth() // Clears user state
+        this.clearAuth() // Clears user state and tabs
         router.push('/login') // Redirects to login page
         this.loading = false
       }
