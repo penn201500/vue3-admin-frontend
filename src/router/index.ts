@@ -23,7 +23,7 @@ const router = createRouter({
     {
       path: '/settings/menu',
       name: 'menu-settings',
-      component: () => import('@/views/settings/menu/index.vue'),
+      component: () => import('@/views/settings/menu/indexView.vue'),
     },
     {
       path: '/login',

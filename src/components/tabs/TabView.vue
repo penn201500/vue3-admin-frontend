@@ -44,9 +44,9 @@ const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'bizm/DepartmentView': () => import('@/views/bizm/DepartmentView.vue'),
   'bizm/Post': () => import('@/views/bizm/PostView.vue'),
   'bizm/PostView': () => import('@/views/bizm/PostView.vue'),
-  'settings/user/index': () => import('@/views/settings/user/index.vue'),
-  'settings/role/index': () => import('@/views/settings/role/index.vue'),
-  'settings/menu/index': () => import('@/views/settings/menu/index.vue'),
+  'settings/user/index': () => import('@/views/settings/user/indexView.vue'),
+  'settings/role/index': () => import('@/views/settings/role/indexView.vue'),
+  'settings/menu/index': () => import('@/views/settings/menu/indexView.vue'),
 }
 
 const tabStore = useTabStore()
