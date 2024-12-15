@@ -11,7 +11,6 @@
 
       <!-- Main Content -->
       <el-main class="p-0 m-0">
-        <!-- <MainComponent /> -->
         <TabView />
       </el-main>
     </el-container>
