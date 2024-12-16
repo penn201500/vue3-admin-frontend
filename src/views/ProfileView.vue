@@ -76,7 +76,9 @@
             </el-form-item>
 
             <!-- Read-only Information -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400"
+            >
               <div>
                 <p class="mb-1">Last Login</p>
                 <p class="font-medium">{{ getFormattedDateTime(currentUser?.login_date) }}</p>
@@ -99,28 +101,32 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <el-form-item label="Language">
-              <el-select
-                v-model="profileForm.language"
-                class="w-full"
-                :popper-class="'custom-select-popper'"
-                :teleported="false"
-              >
-                <el-option label="English" value="en" />
-                <el-option label="中文" value="zh" />
-              </el-select>
+              <div class="popper-container" inert>
+                <el-select
+                  v-model="profileForm.language"
+                  class="w-full"
+                  :popper-class="'custom-select-popper'"
+                  :teleported="false"
+                >
+                  <el-option label="English" value="en" />
+                  <el-option label="中文" value="zh" />
+                </el-select>
+              </div>
             </el-form-item>
 
             <el-form-item label="Theme">
-              <el-select
-                v-model="currentTheme"
-                class="w-full"
-                @change="onThemeChange"
-                :popper-class="'custom-select-popper'"
-                :teleported="false"
-              >
-                <el-option label="Light" :value="false" />
-                <el-option label="Dark" :value="true" />
-              </el-select>
+              <div class="popper-container" inert>
+                <el-select
+                  v-model="currentTheme"
+                  class="w-full"
+                  @change="onThemeChange"
+                  :popper-class="'custom-select-popper'"
+                  :teleported="false"
+                >
+                  <el-option label="Light" :value="false" />
+                  <el-option label="Dark" :value="true" />
+                </el-select>
+              </div>
             </el-form-item>
           </div>
         </div>
@@ -161,11 +167,7 @@
                   </el-form-item>
 
                   <el-form-item label="New Password" prop="newPassword">
-                    <el-input
-                      v-model="passwordForm.newPassword"
-                      type="password"
-                      show-password
-                    />
+                    <el-input v-model="passwordForm.newPassword" type="password" show-password />
                   </el-form-item>
 
                   <el-form-item label="Confirm New Password" prop="confirmPassword">
@@ -440,3 +442,9 @@ const onPasswordSubmit = async (): Promise<void> => {
   })
 }
 </script>
+
+<style>
+.el-popper {
+  position: fixed !important;
+}
+</style>
