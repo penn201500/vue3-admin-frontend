@@ -67,7 +67,9 @@ import { useThemeStore } from '@/stores/theme'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
 import { useIsCollapsedStore } from '@/stores/isCollapsedStore'
+import { useTabStore } from '@/stores/tabStore'
 
+const tabStore = useTabStore()
 const homeLayoutStore = useIsCollapsedStore()
 const authStore = useAuthStore()
 const router = useRouter()
@@ -82,8 +84,14 @@ const toggleTheme = () => themeStore.toggleDarkMode()
 const handleCommand = async (command: string) => {
   switch (command) {
     case 'Profile':
-      console.log('Command received:', command)
-      await router.push('/profile')
+      // Add a new tab for Profile
+      tabStore.addTab({
+        id: 'profile',
+        title: 'Profile',
+        path: '/profile',
+        component: 'profile', // This maps to the profile component
+        closeable: true,
+      })
       break
     case 'Settings':
       await router.push('/settings')
