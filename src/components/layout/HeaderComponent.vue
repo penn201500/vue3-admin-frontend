@@ -35,7 +35,7 @@
           size="default"
         />
         <!-- User Profile Dropdown -->
-        <el-dropdown @command="handleCommand">
+        <el-dropdown @command="handleCommand" trigger="click" :teleported="false">
           <el-avatar :icon="UserFilled" class="cursor-pointer" size="small" />
           <template #dropdown>
             <el-dropdown-menu>
