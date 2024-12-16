@@ -3,7 +3,7 @@
     <div class="max-w-4xl mx-auto">
       <!-- Profile Header -->
       <div class="mb-8 text-center">
-        <div class="mb-4">
+        <div class="avatar-wrapper" tabindex="-1" aria-label="User avatar">
           <el-avatar :size="100" :src="currentUser?.avatar">
             <el-icon><UserFilled /></el-icon>
           </el-avatar>
@@ -101,14 +101,25 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <el-form-item label="Language">
-              <el-select v-model="form.language" class="w-full">
+              <el-select
+                v-model="form.language"
+                class="w-full"
+                :popper-class="'custom-select-popper'"
+                :teleported="false"
+              >
                 <el-option label="English" value="en" />
                 <el-option label="中文" value="zh" />
               </el-select>
             </el-form-item>
 
             <el-form-item label="Theme">
-              <el-select v-model="currentTheme" class="w-full" @change="onThemeChange">
+              <el-select
+                v-model="currentTheme"
+                class="w-full"
+                @change="onThemeChange"
+                :popper-class="'custom-select-popper'"
+                :teleported="false"
+              >
                 <el-option label="Light" :value="false" />
                 <el-option label="Dark" :value="true" />
               </el-select>
