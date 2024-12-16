@@ -25,9 +25,9 @@
 
       <!-- Profile Information Form -->
       <el-form
-        ref="formRef"
-        :model="form"
-        :rules="formRules"
+        ref="profileFormRef"
+        :model="profileForm"
+        :rules="profileRules"
         label-position="top"
         class="space-y-6"
       >
@@ -39,15 +39,15 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <el-form-item label="Username" prop="username">
-              <el-input v-model="form.username" disabled />
+              <el-input v-model="profileForm.username" disabled />
             </el-form-item>
 
             <el-form-item label="Email" prop="email">
-              <el-input v-model="form.email" />
+              <el-input v-model="profileForm.email" />
             </el-form-item>
 
             <el-form-item label="Phone" prop="phone">
-              <el-input v-model="form.phone" maxlength="11" />
+              <el-input v-model="profileForm.phone" maxlength="11" />
             </el-form-item>
 
             <el-form-item label="Status">
@@ -67,7 +67,7 @@
           <div class="space-y-4">
             <el-form-item label="Comment" prop="comment">
               <el-input
-                v-model="form.comment"
+                v-model="profileForm.comment"
                 type="textarea"
                 :rows="3"
                 maxlength="500"
@@ -76,9 +76,7 @@
             </el-form-item>
 
             <!-- Read-only Information -->
-            <div
-              class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400"
-            >
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
               <div>
                 <p class="mb-1">Last Login</p>
                 <p class="font-medium">{{ getFormattedDateTime(currentUser?.login_date) }}</p>
@@ -102,7 +100,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <el-form-item label="Language">
               <el-select
-                v-model="form.language"
+                v-model="profileForm.language"
                 class="w-full"
                 :popper-class="'custom-select-popper'"
                 :teleported="false"
@@ -127,14 +125,70 @@
           </div>
         </div>
 
-        <!-- Form Actions -->
+        <!-- Profile Form Actions -->
         <div class="flex justify-end space-x-4">
-          <el-button @click="onReset">Reset</el-button>
-          <el-button type="primary" @click="onSubmit" :loading="isLoading">
+          <el-button @click="onProfileReset">Reset</el-button>
+          <el-button type="primary" @click="onProfileSubmit" :loading="isLoading">
             Save Changes
           </el-button>
         </div>
       </el-form>
+
+      <!-- Password Update Section -->
+      <div class="mt-8">
+        <el-collapse>
+          <el-collapse-item>
+            <template #title>
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                Change Password
+              </h2>
+            </template>
+            <el-form
+              ref="passwordFormRef"
+              :model="passwordForm"
+              :rules="passwordRules"
+              label-position="top"
+              class="mt-4"
+            >
+              <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+                <div class="space-y-4">
+                  <el-form-item label="Current Password" prop="currentPassword">
+                    <el-input
+                      v-model="passwordForm.currentPassword"
+                      type="password"
+                      show-password
+                    />
+                  </el-form-item>
+
+                  <el-form-item label="New Password" prop="newPassword">
+                    <el-input
+                      v-model="passwordForm.newPassword"
+                      type="password"
+                      show-password
+                    />
+                  </el-form-item>
+
+                  <el-form-item label="Confirm New Password" prop="confirmPassword">
+                    <el-input
+                      v-model="passwordForm.confirmPassword"
+                      type="password"
+                      show-password
+                    />
+                  </el-form-item>
+                </div>
+
+                <!-- Password Form Actions -->
+                <div class="flex justify-end space-x-4 mt-6">
+                  <el-button @click="onPasswordReset">Reset</el-button>
+                  <el-button type="primary" @click="onPasswordSubmit" :loading="isPasswordLoading">
+                    Update Password
+                  </el-button>
+                </div>
+              </div>
+            </el-form>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
     </div>
   </div>
 </template>
@@ -147,7 +201,8 @@ import { ElNotification } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, UploadFile } from 'element-plus'
 
-interface Form {
+// Interfaces
+interface ProfileForm {
   username: string
   email: string | null
   phone: string | null
@@ -155,12 +210,23 @@ interface Form {
   language: string
 }
 
-const formRef = ref<FormInstance>()
-const isLoading = ref(false)
+interface PasswordForm {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
 
+// Refs
+const profileFormRef = ref<FormInstance>()
+const passwordFormRef = ref<FormInstance>()
+const isLoading = ref(false)
+const isPasswordLoading = ref(false)
+
+// Store
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
+// Computed
 const currentUser = computed(() => authStore.user)
 const currentTheme = computed({
   get: () => themeStore.isDarkMode,
@@ -171,7 +237,8 @@ const currentTheme = computed({
   },
 })
 
-const formRules = {
+// Form Rules
+const profileRules = {
   email: [
     {
       type: 'email' as const,
@@ -188,7 +255,47 @@ const formRules = {
   ],
 }
 
-const form = reactive<Form>({
+const passwordRules = {
+  currentPassword: [
+    {
+      required: true,
+      message: 'Please enter your current password',
+      trigger: 'blur',
+    },
+  ],
+  newPassword: [
+    {
+      required: true,
+      message: 'Please enter your new password',
+      trigger: 'blur',
+    },
+    {
+      min: 8,
+      message: 'Password must be at least 8 characters long',
+      trigger: 'blur',
+    },
+  ],
+  confirmPassword: [
+    {
+      required: true,
+      message: 'Please confirm your new password',
+      trigger: 'blur',
+    },
+    {
+      validator: (rule: { field: string }, value: string, callback: (error?: Error) => void) => {
+        if (value !== passwordForm.newPassword) {
+          callback(new Error('Passwords do not match!'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur',
+    },
+  ],
+}
+
+// Forms
+const profileForm = reactive<ProfileForm>({
   username: currentUser.value?.username ?? '',
   email: currentUser.value?.email ?? null,
   phone: currentUser.value?.phone ?? null,
@@ -196,6 +303,13 @@ const form = reactive<Form>({
   language: 'en',
 })
 
+const passwordForm = reactive<PasswordForm>({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+})
+
+// Status computeds
 const currentStatusType = computed((): 'success' | 'danger' | 'info' => {
   switch (currentUser.value?.status) {
     case 1:
@@ -218,6 +332,7 @@ const currentStatusText = computed((): string => {
   }
 })
 
+// Utility functions
 const getFormattedDateTime = (dateString: string | null | undefined): string => {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleString()
@@ -227,12 +342,20 @@ const onThemeChange = (value: boolean): void => {
   currentTheme.value = value
 }
 
-const onReset = (): void => {
-  if (formRef.value) {
-    formRef.value.resetFields()
+// Form actions
+const onProfileReset = (): void => {
+  if (profileFormRef.value) {
+    profileFormRef.value.resetFields()
   }
 }
-// Update onAvatarChange to be used in a more meaningful way
+
+const onPasswordReset = (): void => {
+  if (passwordFormRef.value) {
+    passwordFormRef.value.resetFields()
+  }
+}
+
+// API calls and form submissions
 const onAvatarChange = async (uploadFile: UploadFile): Promise<void> => {
   isLoading.value = true
   try {
@@ -245,8 +368,7 @@ const onAvatarChange = async (uploadFile: UploadFile): Promise<void> => {
       })
       return
     }
-    // Will implement actual upload logic later
-    // await uploadAvatar(file)
+    // TODO: Implement avatar upload API call
     ElNotification({
       title: 'Success',
       message: 'Avatar changed successfully',
@@ -263,22 +385,20 @@ const onAvatarChange = async (uploadFile: UploadFile): Promise<void> => {
   }
 }
 
-// Update error handling in onSubmit
-const onSubmit = async (): Promise<void> => {
-  if (!formRef.value) return
+const onProfileSubmit = async (): Promise<void> => {
+  if (!profileFormRef.value) return
 
-  await formRef.value.validate(async (valid: boolean) => {
+  await profileFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       isLoading.value = true
       try {
-        // Save changes logic will be implemented later
+        // TODO: Implement profile update API call
         ElNotification({
           title: 'Success',
           message: 'Profile updated successfully',
           type: 'success',
         })
       } catch (err) {
-        // Changed from error to err since we're using it
         ElNotification({
           title: 'Error',
           message: err instanceof Error ? err.message : 'Failed to update profile',
@@ -286,6 +406,35 @@ const onSubmit = async (): Promise<void> => {
         })
       } finally {
         isLoading.value = false
+      }
+    }
+  })
+}
+
+const onPasswordSubmit = async (): Promise<void> => {
+  if (!passwordFormRef.value) return
+
+  await passwordFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      isPasswordLoading.value = true
+      try {
+        // TODO: Implement password update API call
+        ElNotification({
+          title: 'Success',
+          message: 'Password updated successfully',
+          type: 'success',
+        })
+        passwordForm.currentPassword = ''
+        passwordForm.newPassword = ''
+        passwordForm.confirmPassword = ''
+      } catch (err) {
+        ElNotification({
+          title: 'Error',
+          message: err instanceof Error ? err.message : 'Failed to update password',
+          type: 'error',
+        })
+      } finally {
+        isPasswordLoading.value = false
       }
     }
   })
