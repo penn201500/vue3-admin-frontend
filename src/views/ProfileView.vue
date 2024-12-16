@@ -95,42 +95,6 @@
           </div>
         </div>
 
-        <!-- Theme Settings -->
-        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Preferences</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <el-form-item label="Language">
-              <div class="popper-container" inert>
-                <el-select
-                  v-model="profileForm.language"
-                  class="w-full"
-                  :popper-class="'custom-select-popper'"
-                  :teleported="false"
-                >
-                  <el-option label="English" value="en" />
-                  <el-option label="中文" value="zh" />
-                </el-select>
-              </div>
-            </el-form-item>
-
-            <el-form-item label="Theme">
-              <div class="popper-container" inert>
-                <el-select
-                  v-model="currentTheme"
-                  class="w-full"
-                  @change="onThemeChange"
-                  :popper-class="'custom-select-popper'"
-                  :teleported="false"
-                >
-                  <el-option label="Light" :value="false" />
-                  <el-option label="Dark" :value="true" />
-                </el-select>
-              </div>
-            </el-form-item>
-          </div>
-        </div>
-
         <!-- Profile Form Actions -->
         <div class="flex justify-end space-x-4">
           <el-button @click="onProfileReset">Reset</el-button>
@@ -198,7 +162,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
-import { useThemeStore } from '@/stores/theme'
 import { ElNotification } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, UploadFile } from 'element-plus'
@@ -226,18 +189,9 @@ const isPasswordLoading = ref(false)
 
 // Store
 const authStore = useAuthStore()
-const themeStore = useThemeStore()
 
 // Computed
 const currentUser = computed(() => authStore.user)
-const currentTheme = computed({
-  get: () => themeStore.isDarkMode,
-  set: (value: boolean) => {
-    if (value !== themeStore.isDarkMode) {
-      themeStore.toggleDarkMode()
-    }
-  },
-})
 
 // Form Rules
 const profileRules = {
@@ -338,10 +292,6 @@ const currentStatusText = computed((): string => {
 const getFormattedDateTime = (dateString: string | null | undefined): string => {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleString()
-}
-
-const onThemeChange = (value: boolean): void => {
-  currentTheme.value = value
 }
 
 // Form actions
