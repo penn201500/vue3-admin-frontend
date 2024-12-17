@@ -1,29 +1,42 @@
 <template>
-  <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+  <div class="p-6 bg-white dark:bg-gray-800 min-h-screen">
     <div class="max-w-4xl mx-auto">
       <!-- Profile Header -->
-      <div class="mb-8 text-center">
-        <div class="avatar-wrapper" tabindex="-1" aria-label="User avatar">
-          <el-avatar :size="100" :src="avatarUrl" @error="() => true">
+      <div class="text-center mb-8">
+        <div class="relative inline-block mb-4">
+          <el-avatar
+            :size="96"
+            :src="avatarUrl"
+            class="mb-2 ring-4 ring-gray-100 dark:ring-gray-700"
+          >
             <el-icon><UserFilled /></el-icon>
           </el-avatar>
+          <el-upload
+            action="#"
+            :auto-upload="false"
+            :show-file-list="false"
+            accept="image/*"
+            @change="onAvatarChange"
+          >
+            <el-button
+              type="primary"
+              size="small"
+              circle
+              class="absolute bottom-0 right-0 shadow-lg"
+            >
+              <el-icon><Upload /></el-icon>
+            </el-button>
+          </el-upload>
         </div>
-        <el-upload
-          class="mb-4"
-          action="#"
-          :auto-upload="false"
-          :show-file-list="false"
-          accept="image/*"
-          @change="onAvatarChange"
-        >
-          <el-button size="small" type="primary">Change Avatar</el-button>
-        </el-upload>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          {{ currentUser?.username || 'User Profile' }}
+        <h1 class="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
+          {{ profileForm.username }}
         </h1>
+        <el-tag :type="currentStatusType" class="px-4 py-1 text-sm font-medium">
+          {{ currentStatusText }}
+        </el-tag>
       </div>
 
-      <!-- Profile Information Form -->
+      <!-- Main Form -->
       <el-form
         ref="profileFormRef"
         :model="profileForm"
@@ -31,72 +44,117 @@
         label-position="top"
         class="space-y-6"
       >
-        <!-- Basic Information Section -->
-        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-            Basic Information
-          </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Information -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+            <div class="flex items-center mb-4 text-gray-900 dark:text-white">
+              <el-icon class="mr-2"><InfoFilled /></el-icon>
+              <h2 class="text-xl font-semibold">Basic Information</h2>
+            </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <el-form-item label="Username" prop="username">
-              <el-input v-model="profileForm.username" disabled />
-            </el-form-item>
+            <div class="space-y-4">
+              <el-form-item label="Username" prop="username" class="mb-4">
+                <el-input v-model="profileForm.username" disabled class="w-full">
+                  <template #prefix>
+                    <el-icon><User /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
 
-            <el-form-item label="Email" prop="email">
-              <el-input v-model="profileForm.email" />
-            </el-form-item>
+              <el-form-item label="Email" prop="email" class="mb-4">
+                <el-input v-model="profileForm.email" class="w-full">
+                  <template #prefix>
+                    <el-icon><Message /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
 
-            <el-form-item label="Phone" prop="phone">
-              <el-input v-model="profileForm.phone" maxlength="11" />
-            </el-form-item>
-
-            <el-form-item label="Status">
-              <el-tag :type="currentStatusType">
-                {{ currentStatusText }}
-              </el-tag>
-            </el-form-item>
+              <el-form-item label="Phone" prop="phone" class="mb-4">
+                <el-input v-model="profileForm.phone" maxlength="11" class="w-full">
+                  <template #prefix>
+                    <el-icon><Phone /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
           </div>
-        </div>
 
-        <!-- Additional Information Section -->
-        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-            Additional Information
-          </h2>
+          <!-- Timeline -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+            <div class="flex items-center mb-4 text-gray-900 dark:text-white">
+              <el-icon class="mr-2"><Timer /></el-icon>
+              <h2 class="text-xl font-semibold">Account Timeline</h2>
+            </div>
 
-          <div class="space-y-4">
+            <div class="space-y-4">
+              <div class="flex items-start space-x-3">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center"
+                >
+                  <el-icon class="text-blue-500"><Timer /></el-icon>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">Account Created</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ getFormattedDateTime(currentUser?.create_time) }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start space-x-3">
+                <div
+                  class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center"
+                >
+                  <el-icon class="text-green-500"><User /></el-icon>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">Last Login</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ getFormattedDateTime(currentUser?.login_date) }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start space-x-3">
+                <div
+                  class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
+                >
+                  <el-icon class="text-purple-500"><Edit /></el-icon>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">Last Updated</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ getFormattedDateTime(currentUser?.update_time) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 md:col-span-2">
+            <div class="flex items-center mb-4 text-gray-900 dark:text-white">
+              <el-icon class="mr-2"><Comment /></el-icon>
+              <h2 class="text-xl font-semibold">Additional Information</h2>
+            </div>
+
             <el-form-item label="Comment" prop="comment">
               <el-input
                 v-model="profileForm.comment"
                 type="textarea"
-                :rows="3"
+                :rows="4"
                 maxlength="500"
                 show-word-limit
+                resize="none"
+                class="w-full"
+                placeholder="Add your comment here..."
               />
             </el-form-item>
-
-            <!-- Read-only Information -->
-            <div
-              class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400"
-            >
-              <div>
-                <p class="mb-1">Last Login</p>
-                <p class="font-medium">{{ getFormattedDateTime(currentUser?.login_date) }}</p>
-              </div>
-              <div>
-                <p class="mb-1">Account Created</p>
-                <p class="font-medium">{{ getFormattedDateTime(currentUser?.create_time) }}</p>
-              </div>
-              <div>
-                <p class="mb-1">Last Updated</p>
-                <p class="font-medium">{{ getFormattedDateTime(currentUser?.update_time) }}</p>
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- Profile Form Actions -->
-        <div class="flex justify-end space-x-4">
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-4 mt-6">
           <el-button @click="onProfileReset">Reset</el-button>
           <el-button type="primary" @click="onProfileSubmit" :loading="isLoading">
             Save Changes
@@ -104,15 +162,17 @@
         </div>
       </el-form>
 
-      <!-- Password Update Section -->
+      <!-- Password Section -->
       <div class="mt-8">
         <el-collapse>
           <el-collapse-item>
             <template #title>
-              <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Change Password
-              </h2>
+              <div class="flex items-center text-gray-900 dark:text-white">
+                <el-icon class="mr-2"><Lock /></el-icon>
+                <span class="text-xl font-semibold">Change Password</span>
+              </div>
             </template>
+
             <el-form
               ref="passwordFormRef"
               :model="passwordForm"
@@ -120,73 +180,119 @@
               label-position="top"
               class="mt-4"
             >
-              <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+              <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg space-y-6">
+                <!-- Current Password -->
+                <el-form-item label="Current Password" prop="currentPassword" class="mb-4">
+                  <el-input
+                    v-model="passwordForm.currentPassword"
+                    type="password"
+                    show-password
+                    class="w-full"
+                  >
+                    <template #prefix>
+                      <el-icon><Key /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <!-- New Password with Requirements -->
                 <div class="space-y-4">
-                  <el-form-item label="Current Password" prop="currentPassword">
+                  <el-form-item label="New Password" prop="newPassword" class="mb-2">
                     <el-input
-                      v-model="passwordForm.currentPassword"
+                      v-model="passwordForm.newPassword"
                       type="password"
                       show-password
-                    />
-                  </el-form-item>
-
-                  <el-form-item label="New Password" prop="newPassword">
-                    <el-input v-model="passwordForm.newPassword" type="password" show-password />
-                    <!-- Add password requirements display -->
-                    <div class="mt-2 text-sm">
-                      <div
-                        v-for="(requirement, index) in passwordRequirements"
-                        :key="index"
-                        :class="[
-                          'flex items-center space-x-1',
-                          checkRequirement(requirement) ? 'text-green-500' : 'text-red-500',
-                        ]"
-                      >
-                        <el-icon>
-                          <CheckIcon v-if="checkRequirement(requirement)" />
-                          <CloseIcon v-else />
-                        </el-icon>
-                        <span>{{ requirement.text }}</span>
-                      </div>
-                    </div>
-                  </el-form-item>
-
-                  <el-form-item label="Confirm New Password" prop="confirmPassword">
-                    <el-input
-                      v-model="passwordForm.confirmPassword"
-                      type="password"
-                      show-password
-                    />
-                    <!-- Add password match indicator -->
-                    <!-- Only show match indicator when confirm password is not empty -->
-                    <div
-                      v-if="passwordForm.confirmPassword"
-                      class="mt-2 text-sm"
-                      :class="
-                        passwordForm.confirmPassword === passwordForm.newPassword
-                          ? 'text-green-500'
-                          : 'text-red-500'
-                      "
+                      class="w-full"
                     >
-                      <div class="flex items-center space-x-1">
-                        <el-icon>
-                          <CheckIcon v-if="passwordForm.confirmPassword === passwordForm.newPassword" />
-                          <CloseIcon v-else />
+                      <template #prefix>
+                        <el-icon><Lock /></el-icon>
+                      </template>
+                    </el-input>
+                  </el-form-item>
+
+                  <!-- Password Requirements -->
+                  <div class="bg-white dark:bg-gray-800 p-4 rounded-lg space-y-2">
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Password Requirements
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div
+                        v-for="requirement in passwordRequirements"
+                        :key="requirement.text"
+                        class="flex items-center space-x-2"
+                      >
+                        <el-icon
+                          class="text-lg"
+                          :class="[
+                            checkRequirement(requirement) ? 'text-green-500' : 'text-gray-400',
+                          ]"
+                        >
+                          <Check v-if="checkRequirement(requirement)" />
+                          <Close v-else />
                         </el-icon>
-                        <span>{{
-                          passwordForm.confirmPassword === passwordForm.newPassword
-                            ? 'Passwords match'
-                            : 'Passwords do not match'
-                        }}</span>
+                        <span
+                          class="text-sm"
+                          :class="[
+                            checkRequirement(requirement)
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-gray-600 dark:text-gray-400',
+                          ]"
+                        >
+                          {{ requirement.text }}
+                        </span>
                       </div>
                     </div>
-                  </el-form-item>
+                  </div>
                 </div>
 
-                <!-- Password Form Actions -->
-                <div class="flex justify-end space-x-4 mt-6">
+                <!-- Confirm Password -->
+                <el-form-item label="Confirm New Password" prop="confirmPassword" class="mb-4">
+                  <el-input
+                    v-model="passwordForm.confirmPassword"
+                    type="password"
+                    show-password
+                    class="w-full"
+                  >
+                    <template #prefix>
+                      <el-icon><Lock /></el-icon>
+                    </template>
+                  </el-input>
+
+                  <!-- Password Match Indicator -->
+                  <div
+                    v-if="passwordForm.confirmPassword"
+                    class="mt-2 flex items-center space-x-2"
+                    :class="[
+                      passwordForm.confirmPassword === passwordForm.newPassword
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400',
+                    ]"
+                  >
+                    <el-icon class="text-lg">
+                      <Check v-if="passwordForm.confirmPassword === passwordForm.newPassword" />
+                      <Close v-else />
+                    </el-icon>
+                    <span class="text-sm">
+                      {{
+                        passwordForm.confirmPassword === passwordForm.newPassword
+                          ? 'Passwords match'
+                          : 'Passwords do not match'
+                      }}
+                    </span>
+                  </div>
+                </el-form-item>
+
+                <!-- Form Actions -->
+                <div
+                  class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-600"
+                >
                   <el-button @click="onPasswordReset">Reset</el-button>
-                  <el-button type="primary" @click="onPasswordSubmit" :loading="isPasswordLoading">
+                  <el-button
+                    type="primary"
+                    @click="onPasswordSubmit"
+                    :loading="isPasswordLoading"
+                    :disabled="!isPasswordFormValid"
+                  >
                     Update Password
                   </el-button>
                 </div>
@@ -203,13 +309,23 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { ElNotification } from 'element-plus'
-import { UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, UploadFile } from 'element-plus'
 import apiClient from '@/utils/apiClient'
 import axios from 'axios'
 import {
-  Check as CheckIcon,
-  Close as CloseIcon
+  Check,
+  Close,
+  UserFilled,
+  InfoFilled,
+  Upload,
+  Timer,
+  Comment,
+  Lock,
+  Key,
+  Edit,
+  User,
+  Message,
+  Phone,
 } from '@element-plus/icons-vue'
 
 // Interfaces
@@ -270,6 +386,17 @@ const profileRules = {
     },
   ],
 }
+
+// For password button state
+const isPasswordFormValid = computed(() => {
+  return (
+    passwordForm.currentPassword &&
+    passwordForm.newPassword &&
+    passwordForm.confirmPassword &&
+    passwordForm.newPassword === passwordForm.confirmPassword &&
+    passwordRequirements.every((req) => checkRequirement(req))
+  )
+})
 
 // Update your password validation to update the formErrors
 const validateConfirmPassword = (
