@@ -551,6 +551,19 @@ const fetchUserProfile = async () => {
     if (response.data.code === 200) {
       // Update store with full user data while keeping existing token and rememberMe
       authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
+
+      // Update local form data
+      profileForm.username = response.data.data.username
+      profileForm.email = response.data.data.email
+      profileForm.phone = response.data.data.phone
+      profileForm.comment = response.data.data.comment
+
+      // Update original form data for comparison
+      originalForm.value = {
+        email: response.data.data.email,
+        phone: response.data.data.phone,
+        comment: response.data.data.comment,
+      }
     }
   } catch (error) {
     // Only show error if it's not an abort error
