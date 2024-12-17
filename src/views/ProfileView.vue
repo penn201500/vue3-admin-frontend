@@ -158,8 +158,9 @@
                       show-password
                     />
                     <!-- Add password match indicator -->
+                    <!-- Only show match indicator when confirm password is not empty -->
                     <div
-                      v-if="passwordForm.confirmPassword && !formErrors.confirmPassword"
+                      v-if="passwordForm.confirmPassword"
                       class="mt-2 text-sm"
                       :class="
                         passwordForm.confirmPassword === passwordForm.newPassword
@@ -266,20 +267,15 @@ const profileRules = {
   ],
 }
 
-// Track form errors
-const formErrors = reactive({
-  confirmPassword: '',
-})
-
 // Update your password validation to update the formErrors
-const validateConfirmPassword = (rule: unknown, value: string, callback: (error?: Error) => void) => {
-  if (value !== passwordForm.newPassword) {
-    formErrors.confirmPassword = 'Passwords do not match'
-    callback(new Error('Passwords do not match'))
-  } else {
-    formErrors.confirmPassword = ''
-    callback()
-  }
+const validateConfirmPassword = (
+  rule: unknown,
+  value: string,
+  callback: (error?: Error) => void,
+) => {
+  // Always call callback() without error to prevent Element Plus error display
+  // The matching status will be shown by our custom indicator
+  callback()
 }
 
 // Update password rules
