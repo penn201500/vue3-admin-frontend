@@ -454,19 +454,31 @@ const onPasswordSubmit = async (): Promise<void> => {
     if (valid) {
       isPasswordLoading.value = true
       try {
-        // TODO: Implement password update API call
-        ElNotification({
-          title: 'Success',
-          message: 'Password updated successfully',
-          type: 'success',
+        const response = await apiClient.post('/user/api/profile/password/', {
+          current_password: passwordForm.currentPassword,
+          new_password: passwordForm.newPassword,
+          confirm_password: passwordForm.confirmPassword,
         })
-        passwordForm.currentPassword = ''
-        passwordForm.newPassword = ''
-        passwordForm.confirmPassword = ''
+
+        if (response.status === 200) {
+          ElNotification({
+            title: 'Success',
+            message: 'Password updated successfully',
+            type: 'success',
+          })
+
+          // Reset password form after successful update
+          passwordForm.currentPassword = ''
+          passwordForm.newPassword = ''
+          passwordForm.confirmPassword = ''
+
+          // Reset form validation
+          passwordFormRef.value?.resetFields()
+        }
       } catch (err) {
         ElNotification({
           title: 'Error',
-          message: err instanceof Error ? err.message : 'Failed to update password',
+          message: `Failed to update password: ${axios.isAxiosError(err) ? err.response?.data?.message || err.message : 'Unknown error'}`,
           type: 'error',
         })
       } finally {
