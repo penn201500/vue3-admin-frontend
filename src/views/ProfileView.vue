@@ -110,7 +110,7 @@
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">Last Login</p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ getFormattedDateTime(currentUser?.login_date) }}
+                    {{ getFormattedDateTime(currentUser?.last_login) }}
                   </p>
                 </div>
               </div>
