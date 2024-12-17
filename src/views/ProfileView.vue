@@ -222,6 +222,20 @@ interface PasswordForm {
   confirmPassword: string
 }
 
+interface PasswordRequirement {
+  test: (pw: string) => boolean
+  text: string
+}
+
+interface FormRule {
+  required?: boolean
+  message?: string
+  trigger?: 'blur' | 'change' | ('blur' | 'change')[]
+  validator?: (rule: unknown, value: string, callback: (error?: Error) => void) => void
+  type?: string
+  pattern?: RegExp
+}
+
 // Refs
 const profileFormRef = ref<FormInstance>()
 const passwordFormRef = ref<FormInstance>()
@@ -258,7 +272,7 @@ const formErrors = reactive({
 })
 
 // Update your password validation to update the formErrors
-const validateConfirmPassword = (rule: any, value: string, callback: Function) => {
+const validateConfirmPassword = (rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (value !== passwordForm.newPassword) {
     formErrors.confirmPassword = 'Passwords do not match'
     callback(new Error('Passwords do not match'))
@@ -269,7 +283,7 @@ const validateConfirmPassword = (rule: any, value: string, callback: Function) =
 }
 
 // Update password rules
-const passwordRules = {
+const passwordRules: Record<string, FormRule[]> = {
   currentPassword: [
     {
       required: true,
@@ -284,7 +298,7 @@ const passwordRules = {
       trigger: 'blur',
     },
     {
-      validator: (rule: any, value: string, callback: Function) => {
+      validator: (rule: unknown, value: string, callback: (error?: Error) => void) => {
         const failedRequirements = validatePasswordRequirements(value)
         if (failedRequirements.length > 0) {
           callback(new Error(`Password requirements not met:\n${failedRequirements.join('\n')}`))
@@ -514,8 +528,9 @@ const validatePasswordRequirements = (password: string) => {
   }
 
   const failedRequirements = Object.entries(requirements)
-    .filter(([_, met]) => !met)
-    .map(([req]) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    .filter(([_, met]: [string, boolean]) => !met)
+    .map(([req]: [string, boolean]) => {
       switch (req) {
         case 'minLength':
           return 'At least 8 characters'
@@ -583,7 +598,7 @@ const onPasswordSubmit = async (): Promise<void> => {
   })
 }
 
-const passwordRequirements = [
+const passwordRequirements: PasswordRequirement[] = [
   { test: (pw: string) => pw.length >= 8, text: 'At least 8 characters' },
   { test: (pw: string) => /[A-Z]/.test(pw), text: 'At least one uppercase letter' },
   { test: (pw: string) => /[a-z]/.test(pw), text: 'At least one lowercase letter' },
