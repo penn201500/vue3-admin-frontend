@@ -143,8 +143,8 @@
                         ]"
                       >
                         <el-icon>
-                          <Check v-if="checkRequirement(requirement)" />
-                          <Close v-else />
+                          <CheckIcon v-if="checkRequirement(requirement)" />
+                          <CloseIcon v-else />
                         </el-icon>
                         <span>{{ requirement.text }}</span>
                       </div>
@@ -170,8 +170,8 @@
                     >
                       <div class="flex items-center space-x-1">
                         <el-icon>
-                          <Check v-if="passwordForm.confirmPassword === passwordForm.newPassword" />
-                          <Close v-else />
+                          <CheckIcon v-if="passwordForm.confirmPassword === passwordForm.newPassword" />
+                          <CloseIcon v-else />
                         </el-icon>
                         <span>{{
                           passwordForm.confirmPassword === passwordForm.newPassword
@@ -207,6 +207,10 @@ import { UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, UploadFile } from 'element-plus'
 import apiClient from '@/utils/apiClient'
 import axios from 'axios'
+import {
+  Check as CheckIcon,
+  Close as CloseIcon
+} from '@element-plus/icons-vue'
 
 // Interfaces
 interface ProfileForm {
