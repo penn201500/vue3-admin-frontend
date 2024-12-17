@@ -404,12 +404,36 @@ const onProfileSubmit = async (): Promise<void> => {
     if (valid) {
       isLoading.value = true
       try {
-        // TODO: Implement profile update API call
-        ElNotification({
-          title: 'Success',
-          message: 'Profile updated successfully',
-          type: 'success',
+        const response = await apiClient.patch('/user/api/profile/update/', {
+          email: profileForm.email,
+          phone: profileForm.phone,
+          comment: profileForm.comment,
         })
+
+        if (response.status === 200) {
+          ElNotification({
+            title: 'Success',
+            message: 'Profile updated successfully',
+            type: 'success',
+          })
+
+          // Update the store with new user data
+          if (currentUser.value) {
+            const currentToken = authStore.accessToken || ''
+            const currentRememberMe = authStore.rememberMe || false
+
+            authStore.setUser(
+              {
+                ...currentUser.value,
+                email: response.data.data.email,
+                phone: response.data.data.phone,
+                comment: response.data.data.comment,
+              },
+              currentToken,
+              currentRememberMe,
+            )
+          }
+        }
       } catch (err) {
         ElNotification({
           title: 'Error',
