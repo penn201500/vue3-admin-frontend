@@ -311,7 +311,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { ElNotification } from 'element-plus'
 import type { FormInstance, UploadFile } from 'element-plus'
@@ -332,6 +332,8 @@ import {
   Message,
   Phone,
 } from '@element-plus/icons-vue'
+
+const controller = new AbortController()
 
 // Interfaces
 interface ProfileForm {
@@ -518,11 +520,17 @@ const avatarUrl = ref<string>('')
 
 const fetchAvatar = async () => {
   try {
-    const response = await apiClient.get('/user/api/profile/get-avatar/')
+    const response = await apiClient.get('/user/api/profile/get-avatar/', {
+      signal: controller.signal,
+    })
     if (response.data.code === 200) {
       avatarUrl.value = response.data.data.avatar_url
     }
   } catch (error) {
+    // Only show error if it's not an abort error
+    if (axios.isCancel(error)) {
+      return
+    }
     // Silently fail for 404 (no avatar)
     if (axios.isAxiosError(error) && error.response?.status !== 404) {
       ElNotification({
@@ -536,6 +544,10 @@ const fetchAvatar = async () => {
 
 onMounted(() => {
   fetchAvatar()
+})
+
+onUnmounted(() => {
+  controller.abort() // Cancel any pending requests
 })
 
 // Utility functions
