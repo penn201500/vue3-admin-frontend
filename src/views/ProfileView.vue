@@ -4,7 +4,7 @@
       <!-- Profile Header -->
       <div class="mb-8 text-center">
         <div class="avatar-wrapper" tabindex="-1" aria-label="User avatar">
-          <el-avatar :size="100" :src="currentUser?.avatar">
+          <el-avatar :size="100" :src="avatarUrl" @error="() => true">
             <el-icon><UserFilled /></el-icon>
           </el-avatar>
         </div>
@@ -160,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { ElNotification } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
@@ -290,6 +290,31 @@ const currentStatusText = computed((): string => {
   }
 })
 
+// Avatar
+const avatarUrl = ref<string>('')
+
+const fetchAvatar = async () => {
+  try {
+    const response = await apiClient.get('/user/api/profile/get-avatar/')
+    if (response.data.code === 200) {
+      avatarUrl.value = response.data.data.avatar_url
+    }
+  } catch (error) {
+    // Silently fail for 404 (no avatar)
+    if (axios.isAxiosError(error) && error.response?.status !== 404) {
+      ElNotification({
+        title: 'Error',
+        message: 'Failed to load avatar',
+        type: 'error',
+      })
+    }
+  }
+}
+
+onMounted(() => {
+  fetchAvatar()
+})
+
 // Utility functions
 const getFormattedDateTime = (dateString: string | null | undefined): string => {
   if (!dateString) return 'N/A'
@@ -340,6 +365,9 @@ const onAvatarChange = async (uploadFile: UploadFile): Promise<void> => {
         message: 'Avatar changed successfully',
         type: 'success',
       })
+
+      // Refetch avatar after successful upload
+      await fetchAvatar()
 
       // Update the store with new avatar URL
       if (currentUser.value) {
