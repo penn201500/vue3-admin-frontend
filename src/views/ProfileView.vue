@@ -155,8 +155,13 @@
 
         <!-- Form Actions -->
         <div class="flex justify-end space-x-4 mt-6">
-          <el-button @click="onProfileReset">Reset</el-button>
-          <el-button type="primary" @click="onProfileSubmit" :loading="isLoading">
+          <el-button @click="onProfileReset" :disabled="!isFormDirty"> Reset </el-button>
+          <el-button
+            type="primary"
+            @click="onProfileSubmit"
+            :loading="isLoading"
+            :disabled="!canSubmit"
+          >
             Save Changes
           </el-button>
         </div>
@@ -368,6 +373,27 @@ const authStore = useAuthStore()
 
 // Computed
 const currentUser = computed(() => authStore.user)
+
+// Original user data from the store
+const originalForm = ref({
+  email: currentUser.value?.email ?? null,
+  phone: currentUser.value?.phone ?? null,
+  comment: currentUser.value?.comment ?? null,
+})
+
+// Compute if form is dirty (has changes) and valid
+const isFormDirty = computed(() => {
+  return (
+    profileForm.email !== originalForm.value.email ||
+    profileForm.phone !== originalForm.value.phone ||
+    profileForm.comment !== originalForm.value.comment
+  )
+})
+
+// Determine if save button should be enabled
+const canSubmit = computed(() => {
+  return isFormDirty.value && !isLoading.value
+})
 
 // Form Rules
 const profileRules = {
