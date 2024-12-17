@@ -35,13 +35,28 @@
           size="default"
         />
         <!-- User Profile Dropdown -->
-        <el-dropdown @command="handleCommand" trigger="click" :teleported="false">
+        <el-dropdown @command="handleCommand" trigger="click">
           <el-avatar :icon="UserFilled" class="cursor-pointer" size="small" />
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="Profile">Profile</el-dropdown-item>
-              <el-dropdown-item command="Settings">Settings</el-dropdown-item>
-              <el-dropdown-item command="Logout">Logout</el-dropdown-item>
+              <el-dropdown-item command="Profile">
+                <div class="flex items-center">
+                  <el-icon class="mr-2"><User /></el-icon>
+                  Profile
+                </div>
+              </el-dropdown-item>
+              <el-dropdown-item command="Settings">
+                <div class="flex items-center">
+                  <el-icon class="mr-2"><Setting /></el-icon>
+                  Settings
+                </div>
+              </el-dropdown-item>
+              <el-dropdown-item command="Logout">
+                <div class="flex items-center">
+                  <el-icon class="mr-2"><SwitchButton /></el-icon>
+                  Logout
+                </div>
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -61,7 +76,16 @@ import {
   ElDropdownItem,
   ElSwitch,
 } from 'element-plus'
-import { Search, UserFilled, Moon, Sunrise, Menu } from '@element-plus/icons-vue'
+import {
+  Search,
+  UserFilled,
+  Moon,
+  Sunrise,
+  Menu,
+  User,
+  Setting,
+  SwitchButton,
+} from '@element-plus/icons-vue'
 import { ref, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useAuthStore } from '@/stores/authStore'
