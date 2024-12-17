@@ -542,7 +542,33 @@ const fetchAvatar = async () => {
   }
 }
 
+// Fetch full user profile on component mount
+const fetchUserProfile = async () => {
+  try {
+    const response = await apiClient.get('/user/api/user-info/', {
+      signal: controller.signal,
+    })
+    if (response.data.code === 200) {
+      // Update store with full user data while keeping existing token and rememberMe
+      authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
+    }
+  } catch (error) {
+    // Only show error if it's not an abort error
+    if (axios.isCancel(error)) {
+      return
+    }
+    if (axios.isAxiosError(error)) {
+      ElNotification({
+        title: 'Error',
+        message: `Failed to load user profile ${axios.isAxiosError(error) ? error.response?.data?.message : ''}`,
+        type: 'error',
+      })
+    }
+  }
+}
+
 onMounted(() => {
+  fetchUserProfile()
   fetchAvatar()
 })
 
