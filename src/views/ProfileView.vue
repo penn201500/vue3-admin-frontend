@@ -132,6 +132,23 @@
 
                   <el-form-item label="New Password" prop="newPassword">
                     <el-input v-model="passwordForm.newPassword" type="password" show-password />
+                    <!-- Add password requirements display -->
+                    <div class="mt-2 text-sm">
+                      <div
+                        v-for="(requirement, index) in passwordRequirements"
+                        :key="index"
+                        :class="[
+                          'flex items-center space-x-1',
+                          checkRequirement(requirement) ? 'text-green-500' : 'text-red-500',
+                        ]"
+                      >
+                        <el-icon>
+                          <Check v-if="checkRequirement(requirement)" />
+                          <Close v-else />
+                        </el-icon>
+                        <span>{{ requirement.text }}</span>
+                      </div>
+                    </div>
                   </el-form-item>
 
                   <el-form-item label="Confirm New Password" prop="confirmPassword">
@@ -140,6 +157,28 @@
                       type="password"
                       show-password
                     />
+                    <!-- Add password match indicator -->
+                    <div
+                      v-if="passwordForm.confirmPassword && !formErrors.confirmPassword"
+                      class="mt-2 text-sm"
+                      :class="
+                        passwordForm.confirmPassword === passwordForm.newPassword
+                          ? 'text-green-500'
+                          : 'text-red-500'
+                      "
+                    >
+                      <div class="flex items-center space-x-1">
+                        <el-icon>
+                          <Check v-if="passwordForm.confirmPassword === passwordForm.newPassword" />
+                          <Close v-else />
+                        </el-icon>
+                        <span>{{
+                          passwordForm.confirmPassword === passwordForm.newPassword
+                            ? 'Passwords match'
+                            : 'Passwords do not match'
+                        }}</span>
+                      </div>
+                    </div>
                   </el-form-item>
                 </div>
 
@@ -213,6 +252,23 @@ const profileRules = {
   ],
 }
 
+// Track form errors
+const formErrors = reactive({
+  confirmPassword: '',
+})
+
+// Update your password validation to update the formErrors
+const validateConfirmPassword = (rule: any, value: string, callback: Function) => {
+  if (value !== passwordForm.newPassword) {
+    formErrors.confirmPassword = 'Passwords do not match'
+    callback(new Error('Passwords do not match'))
+  } else {
+    formErrors.confirmPassword = ''
+    callback()
+  }
+}
+
+// Update password rules
 const passwordRules = {
   currentPassword: [
     {
@@ -228,9 +284,15 @@ const passwordRules = {
       trigger: 'blur',
     },
     {
-      min: 8,
-      message: 'Password must be at least 8 characters long',
-      trigger: 'blur',
+      validator: (rule: any, value: string, callback: Function) => {
+        const failedRequirements = validatePasswordRequirements(value)
+        if (failedRequirements.length > 0) {
+          callback(new Error(`Password requirements not met:\n${failedRequirements.join('\n')}`))
+        } else {
+          callback()
+        }
+      },
+      trigger: ['blur', 'change'],
     },
   ],
   confirmPassword: [
@@ -240,14 +302,8 @@ const passwordRules = {
       trigger: 'blur',
     },
     {
-      validator: (rule: { field: string }, value: string, callback: (error?: Error) => void) => {
-        if (value !== passwordForm.newPassword) {
-          callback(new Error('Passwords do not match!'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur',
+      validator: validateConfirmPassword,
+      trigger: ['blur', 'change'],
     },
   ],
 }
@@ -447,6 +503,38 @@ const onProfileSubmit = async (): Promise<void> => {
   })
 }
 
+// Password validation rules
+const validatePasswordRequirements = (password: string) => {
+  const requirements = {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+    hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+  }
+
+  const failedRequirements = Object.entries(requirements)
+    .filter(([_, met]) => !met)
+    .map(([req]) => {
+      switch (req) {
+        case 'minLength':
+          return 'At least 8 characters'
+        case 'hasUppercase':
+          return 'At least one uppercase letter'
+        case 'hasLowercase':
+          return 'At least one lowercase letter'
+        case 'hasNumber':
+          return 'At least one number'
+        case 'hasSpecial':
+          return 'At least one special character'
+        default:
+          return ''
+      }
+    })
+
+  return failedRequirements
+}
+
 const onPasswordSubmit = async (): Promise<void> => {
   if (!passwordFormRef.value) return
 
@@ -476,16 +564,38 @@ const onPasswordSubmit = async (): Promise<void> => {
           passwordFormRef.value?.resetFields()
         }
       } catch (err) {
-        ElNotification({
-          title: 'Error',
-          message: `Failed to update password: ${axios.isAxiosError(err) ? err.response?.data?.message || err.message : 'Unknown error'}`,
-          type: 'error',
-        })
+        if (axios.isAxiosError(err)) {
+          const errorMessage =
+            err.response?.data?.errors?.password?.[0] ||
+            err.response?.data?.message ||
+            'Failed to update password'
+          ElNotification({
+            title: 'Error',
+            message: errorMessage,
+            type: 'error',
+            duration: 5000,
+          })
+        }
       } finally {
         isPasswordLoading.value = false
       }
     }
   })
+}
+
+const passwordRequirements = [
+  { test: (pw: string) => pw.length >= 8, text: 'At least 8 characters' },
+  { test: (pw: string) => /[A-Z]/.test(pw), text: 'At least one uppercase letter' },
+  { test: (pw: string) => /[a-z]/.test(pw), text: 'At least one lowercase letter' },
+  { test: (pw: string) => /[0-9]/.test(pw), text: 'At least one number' },
+  {
+    test: (pw: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw),
+    text: 'At least one special character',
+  },
+]
+
+const checkRequirement = (requirement: { test: (pw: string) => boolean }) => {
+  return requirement.test(passwordForm.newPassword)
 }
 </script>
 
