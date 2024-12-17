@@ -165,6 +165,8 @@ import { useAuthStore } from '@/stores/authStore'
 import { ElNotification } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, UploadFile } from 'element-plus'
+import apiClient from '@/utils/apiClient'
+import axios from 'axios'
 
 // Interfaces
 interface ProfileForm {
@@ -320,16 +322,46 @@ const onAvatarChange = async (uploadFile: UploadFile): Promise<void> => {
       })
       return
     }
-    // TODO: Implement avatar upload API call
-    ElNotification({
-      title: 'Success',
-      message: 'Avatar changed successfully',
-      type: 'success',
+
+    const formData = new FormData()
+    formData.append('avatar', file)
+
+    // Use apiClient instead of fetch
+    const response = await apiClient.post('/user/api/profile/avatar/', formData, {
+      headers: {
+        // Override the default Content-Type for file upload
+        'Content-Type': 'multipart/form-data',
+      },
     })
+
+    if (response.status === 200) {
+      ElNotification({
+        title: 'Success',
+        message: 'Avatar changed successfully',
+        type: 'success',
+      })
+
+      // Update the store with new avatar URL
+      if (currentUser.value) {
+        const currentToken = authStore.accessToken || ''
+        const currentRememberMe = authStore.rememberMe || false
+
+        authStore.setUser(
+          {
+            ...currentUser.value,
+            avatar: response.data.data.avatar_url,
+          },
+          currentToken,
+          currentRememberMe,
+        )
+      }
+    } else {
+      throw new Error(response.data.message || 'Failed to update avatar')
+    }
   } catch (err) {
     ElNotification({
       title: 'Error',
-      message: `Failed to update avatar ${err instanceof Error ? err.message : ''}`,
+      message: `Failed to update avatar: ${axios.isAxiosError(err) ? err.response?.data?.message || err.message : 'Unknown error'}`,
       type: 'error',
     })
   } finally {
