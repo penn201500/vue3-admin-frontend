@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 import { i18n } from '@/i18n'
 import { watch } from 'vue'
 import { getActivePinia } from 'pinia'
@@ -41,13 +41,39 @@ function getCSRFToken() {
   return cookieValue
 }
 
+let isRefreshing = false
+let failedQueue: {
+  resolve: (value?: unknown) => void
+  reject: (reason?: unknown) => void
+  config: AxiosRequestConfig
+}[] = []
+
+const processQueue = (error: Error | null, token: string | null = null) => {
+  failedQueue.forEach((request) => {
+    if (error) {
+      request.reject(error)
+    } else {
+      request.config.headers = request.config.headers || {}
+      request.config.headers['Authorization'] = `Bearer ${token}`
+      request.resolve(apiClient(request.config))
+    }
+  })
+  failedQueue = []
+}
+
 // Add a request interceptor to include CSRF token
 apiClient.interceptors.request.use(
   (config) => {
+    // Skip adding auth header for token refresh requests
+    if (config._retry) {
+      return config
+    }
+
     // Include CSRF token only for state-changing methods
     if (['post', 'put', 'delete', 'patch'].includes(config.method || '')) {
       const csrfToken = getCSRFToken()
       if (csrfToken) {
+        config.headers = config.headers || {}
         config.headers['X-CSRFToken'] = csrfToken
       }
     }
@@ -56,9 +82,9 @@ apiClient.interceptors.request.use(
     const pinia = getActivePinia()
     const authStore = useAuthStore(pinia)
     if (authStore.accessToken) {
+      config.headers = config.headers || {}
       config.headers['Authorization'] = `Bearer ${authStore.accessToken}`
     }
-
     return config
   },
   (error) => {
@@ -78,16 +104,57 @@ apiClient.interceptors.response.use(
     }
     return response
   },
-  (error) => {
-    if (axios.isAxiosError(error)) {
-      if (error.response && error.response.status === 429) {
-        // Access the authStore to set the rateLimit flag
-        const pinia = getActivePinia()
-        const authStore = useAuthStore(pinia)
-        // Set the rateLimit flag
-        authStore.rateLimit = true
+  async (error) => {
+    const originalRequest = error.config
+    const pinia = getActivePinia()
+    const authStore = useAuthStore(pinia)
+
+    // Handle 401 errors
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // If token refresh is in progress, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve,
+            reject,
+            config: originalRequest,
+          })
+        })
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        const refreshed = await authStore.refreshAccessToken()
+        if (refreshed === true) {
+          originalRequest.headers = originalRequest.headers || {}
+          // Update the authorization header
+          originalRequest.headers['Authorization'] = `Bearer ${authStore.accessToken}`
+          // Process other queued requests
+          processQueue(null, authStore.accessToken)
+          return apiClient(originalRequest)
+        } else if (refreshed === 'RATE_LIMIT') {
+          const error = new Error('Rate limit reached')
+          processQueue(error)
+          return Promise.reject(error)
+        } else {
+          processQueue(new Error('Failed to refresh token'))
+          return Promise.reject(error)
+        }
+      } catch (refreshError) {
+        processQueue(refreshError as Error)
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
+
+    // Handle rate limiting
+    if (error.response?.status === 429) {
+      authStore.rateLimit = true
+    }
+
     return Promise.reject(error)
   },
 )

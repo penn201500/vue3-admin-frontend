@@ -159,7 +159,12 @@ export const useAuthStore = defineStore('auth', {
         const response = await apiClient.post(
           '/user/api/token/refresh/',
           {},
-          { withCredentials: true },
+          {
+            withCredentials: true,
+            // Skip the request interceptor for this call to prevent infinite loop
+            _retry: true,
+            headers: {}, // Ensure headers are set for this request
+          },
         )
         if (response.data.code === 200) {
           this.accessToken = response.data.access
@@ -170,11 +175,11 @@ export const useAuthStore = defineStore('auth', {
         throw new Error('Failed to refresh token')
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          if (error.response && error.response.status === 429) {
+          if (error.response?.status === 429) {
             // handleError(error)
             // Process rate limiting and notification in response interceptor
             return 'RATE_LIMIT'
-          } else if (error.response && error.response.status === 401) {
+          } else if (error.response?.status === 401) {
             // Unauthorized: Refresh token is missing or invalid
             this.clearAuth()
             showNotification('Error', 'Session expired. Please log in again.', 'error')
