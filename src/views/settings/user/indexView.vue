@@ -1,31 +1,30 @@
 <template>
-  <div class="p-4 sm:p-6 min-h-screen bg-white dark:bg-gray-800">
-    <!-- Header with Search - Reduced top margin -->
-    <div
-      class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4"
-    >
-      <div class="w-full sm:w-96">
-        <el-input
-          v-model="searchQuery"
-          placeholder="Search users..."
-          clearable
-          @clear="handleSearch"
-          @input="handleSearch"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
+  <div class="min-h-screen bg-white dark:bg-gray-800">
+    <!-- Main Container -->
+    <div class="p-4 sm:p-6">
+      <!-- Search Bar Container -->
+      <div class="w-full flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+        <div class="w-full sm:w-96">
+          <el-input
+            v-model="searchQuery"
+            placeholder="Search users..."
+            clearable
+            @clear="handleSearch"
+            @input="handleSearch"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
+        <el-button type="primary">
+          <el-icon class="mr-2"><Plus /></el-icon>
+          Add User
+        </el-button>
       </div>
-      <el-button type="primary" class="w-full sm:w-auto">
-        <el-icon class="mr-2"><Plus /></el-icon>
-        Add User
-      </el-button>
-    </div>
 
-    <!-- Table Container with Horizontal Scroll -->
-    <div class="bg-white dark:bg-gray-900 rounded-lg shadow">
-      <div class="overflow-x-auto">
+      <!-- Desktop View (md and up) -->
+      <div class="hidden md:block">
         <el-table
           v-loading="loading"
           :data="users"
@@ -36,53 +35,28 @@
           :row-class-name="tableRowClassName"
           @sort-change="handleSortChange"
         >
-          <el-table-column label="Avatar" width="80" align="center" fixed="left">
+          <!-- Original table columns -->
+          <el-table-column label="Avatar" width="80" align="center">
             <template #default="scope">
-              <el-avatar
-                :size="40"
-                :src="scope.row.avatar_url"
-                class="ring-2 ring-gray-100 dark:ring-gray-700"
-              >
+              <el-avatar :size="40" :src="scope.row.avatar_url">
                 <el-icon><UserFilled /></el-icon>
               </el-avatar>
             </template>
           </el-table-column>
 
-          <el-table-column
-            prop="username"
-            label="Username"
-            sortable="custom"
-            min-width="120"
-            fixed="left"
-          >
+          <el-table-column prop="username" label="Username" sortable="custom" />
+          <el-table-column prop="email" label="Email" sortable="custom" />
+          <el-table-column prop="phone" label="Phone" />
+
+          <el-table-column prop="status" label="Status" width="120" sortable="custom" align="center">
             <template #default="scope">
-              <span class="font-medium">{{ scope.row.username }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="email" label="Email" sortable="custom" min-width="180" />
-
-          <el-table-column prop="phone" label="Phone" min-width="120" />
-
-          <el-table-column
-            prop="status"
-            label="Status"
-            width="100"
-            sortable="custom"
-            align="center"
-          >
-            <template #default="scope">
-              <el-tag
-                :type="scope.row.status === 1 ? 'success' : 'danger'"
-                class="px-2 py-1"
-                effect="light"
-              >
+              <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
                 {{ scope.row.status === 1 ? 'Active' : 'Inactive' }}
               </el-tag>
             </template>
           </el-table-column>
 
-          <el-table-column prop="create_time" label="Created" sortable="custom" min-width="160">
+          <el-table-column prop="create_time" label="Created" sortable="custom">
             <template #default="scope">
               <span class="text-gray-600 dark:text-gray-400">
                 {{ formatDateTime(scope.row.create_time) }}
@@ -90,7 +64,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="last_login" label="Last Login" sortable="custom" min-width="160">
+          <el-table-column prop="last_login" label="Last Login" sortable="custom">
             <template #default="scope">
               <span class="text-gray-600 dark:text-gray-400">
                 {{ formatDateTime(scope.row.last_login) }}
@@ -98,25 +72,70 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="Actions" width="120" fixed="right" align="center">
+          <el-table-column label="Actions" width="120" align="center">
             <template #default="scope">
               <el-button-group>
-                <el-button
-                  type="primary"
-                  :icon="Edit"
-                  size="small"
-                  @click="handleEdit(scope.row)"
-                />
-                <el-button
-                  type="danger"
-                  :icon="Delete"
-                  size="small"
-                  @click="handleDelete(scope.row)"
-                />
+                <el-button type="primary" :icon="Edit" size="small" @click="handleEdit(scope.row)" />
+                <el-button type="danger" :icon="Delete" size="small" @click="handleDelete(scope.row)" />
               </el-button-group>
             </template>
           </el-table-column>
         </el-table>
+      </div>
+
+      <!-- Mobile View (sm and down) -->
+      <div class="md:hidden space-y-4">
+        <div
+          v-for="user in users"
+          :key="user.id"
+          class="bg-white dark:bg-gray-900 rounded-lg shadow-sm"
+        >
+          <!-- Card Header -->
+          <div class="p-4 border-b dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <el-avatar :size="40" :src="user.avatar_url">
+                  <el-icon><UserFilled /></el-icon>
+                </el-avatar>
+                <div>
+                  <div class="font-medium">{{ user.username }}</div>
+                  <div class="text-sm text-gray-500">{{ user.email }}</div>
+                </div>
+              </div>
+              <el-tag :type="user.status === 1 ? 'success' : 'danger'">
+                {{ user.status === 1 ? 'Active' : 'Inactive' }}
+              </el-tag>
+            </div>
+          </div>
+
+          <!-- Card Content -->
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+              <div>
+                <div class="text-gray-500">Phone</div>
+                <div>{{ user.phone || 'N/A' }}</div>
+              </div>
+              <div>
+                <div class="text-gray-500">Created</div>
+                <div>{{ formatDateTime(user.create_time) }}</div>
+              </div>
+              <div>
+                <div class="text-gray-500">Last Login</div>
+                <div>{{ formatDateTime(user.last_login) }}</div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-2 pt-2 border-t dark:border-gray-700">
+              <el-button type="primary" size="small" @click="handleEdit(user)">
+                <el-icon class="mr-1"><Edit /></el-icon>Edit
+              </el-button>
+              <el-button type="danger" size="small" @click="handleDelete(user)">
+                <el-icon class="mr-1"><Delete /></el-icon>Delete
+              </el-button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
