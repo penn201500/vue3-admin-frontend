@@ -9,4 +9,5 @@ export interface User {
   create_time: string | null
   update_time: string | null
   comment: string | null
+  avatar_url: string | null
 }
