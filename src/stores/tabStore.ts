@@ -10,21 +10,23 @@ function saveTabsToSessionStorage(tabs: TabItem[]) {
 function loadTabsFromSessionStorage(): TabItem[] {
   const storedTabs = sessionStorage.getItem('tabs')
   if (!storedTabs) {
-    return [{
-      id: 'dashboard',
-      title: 'Dashboard',
-      path: '/',
-      component: 'dashboard',
-      closeable: false,
-      isDefault: true,
-    }]
+    return [
+      {
+        id: 'dashboard',
+        title: 'Dashboard',
+        path: '/',
+        component: 'dashboard',
+        closeable: false,
+        isDefault: true,
+      },
+    ]
   }
   return JSON.parse(storedTabs)
 }
 
 export const useTabStore = defineStore('tab', () => {
   const tabs = ref<TabItem[]>(loadTabsFromSessionStorage())
-  const activeTabId = ref('dashboard')
+  const activeTabId = ref(sessionStorage.getItem('trackActiveTab') || 'dashboard')
   const showDefaultTab = ref(true)
 
   const addTab = (tab: TabItem) => {
@@ -54,17 +56,20 @@ export const useTabStore = defineStore('tab', () => {
 
   const setActiveTab = (tabId: string) => {
     activeTabId.value = tabId
+    sessionStorage.setItem('trackActiveTab', tabId)
   }
 
   const clearAllTabs = () => {
-    tabs.value = [{
-      id: 'dashboard',
-      title: 'Dashboard',
-      path: '/',
-      component: 'dashboard',
-      closeable: false,
-      isDefault: true,
-    }]
+    tabs.value = [
+      {
+        id: 'dashboard',
+        title: 'Dashboard',
+        path: '/',
+        component: 'dashboard',
+        closeable: false,
+        isDefault: true,
+      },
+    ]
     activeTabId.value = 'dashboard'
     showDefaultTab.value = true
     sessionStorage.removeItem('tabs')

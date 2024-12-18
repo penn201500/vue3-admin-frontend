@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { showNotification } from '@/utils/showNotification'
 import NotFound from '@/components/NotFound.vue'
 import SignUp from '@/views/SignUp.vue'
+import { useTabStore } from '@/stores/tabStore'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +41,7 @@ let initialAuthCheckDone = false
 // Navigation Guard to Protect Routes
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  const tabStore = useTabStore()
 
   // Don't require authentication for login and signup routes
   if (to.path === '/login' || to.path === '/signup') {
@@ -56,7 +58,17 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth) {
     if (authStore.isAuthenticated) {
-      // User is already authenticated, proceed to the route
+      // Add current route to tabs if not exists
+      if (to.name && to.path !== '/') {
+        tabStore.addTab({
+          id: to.path,
+          title: to.name as string,
+          path: to.path,
+          component: to.path.substring(1), // Remove leading slash
+          closeable: true,
+        })
+        tabStore.setActiveTab(to.path)
+      }
       next()
     } else {
       // If not authenticated, refresh the token
