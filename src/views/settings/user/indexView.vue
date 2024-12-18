@@ -21,7 +21,7 @@
             <template #default="{ row }">
               <el-avatar
                 :size="40"
-                :src="row.avatar"
+                :src="row.avatar_url"
                 class="ring-2 ring-gray-100 dark:ring-gray-700"
               >
                 <el-icon><UserFilled /></el-icon>
@@ -79,11 +79,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
 import type { User } from '@/types/User'
 import apiClient from '@/utils/apiClient'
+import axios from 'axios'
 
 // State
 const loading = ref(false)
@@ -93,16 +94,34 @@ const currentSort = ref({
   order: 'descending',
 })
 
-// Methods
+// Add controller for cleanup
+const controller = new AbortController()
+
 const formatDateTime = (date: string | null): string => {
   if (!date) return 'N/A'
   return new Date(date).toLocaleString()
 }
 
+const fetchUserAvatar = async (userId: number) => {
+  try {
+    const response = await apiClient.get('/user/api/profile/get-avatar/', {
+      params: { user_id: userId },
+      signal: controller.signal,
+    })
+    if (response.data.code === 200) {
+      return response.data.data.avatar_url
+    }
+  } catch (error) {
+    if (!axios.isCancel(error)) {
+      console.error(`Failed to fetch avatar for user ${userId}:`, error)
+    }
+    return null
+  }
+}
+
 const fetchUsers = async () => {
   loading.value = true
   try {
-    // Convert Element Plus sort params to backend format
     let ordering = ''
     if (currentSort.value.prop) {
       ordering =
@@ -113,16 +132,33 @@ const fetchUsers = async () => {
 
     const response = await apiClient.get('/user/api/users/', {
       params: ordering ? { ordering } : undefined,
+      signal: controller.signal,
     })
 
     if (response.data.code === 200) {
+      // Store users first
       users.value = response.data.data
-    } else {
-      throw new Error(response.data.message)
+
+      // Fetch avatars for all users
+      const avatarPromises = users.value.map((user) =>
+        fetchUserAvatar(user.id).then((avatarUrl) => {
+          const userIndex = users.value.findIndex((u) => u.id === user.id)
+          if (userIndex !== -1) {
+            users.value[userIndex] = {
+              ...users.value[userIndex],
+              avatar_url: avatarUrl,
+            }
+          }
+        }),
+      )
+
+      await Promise.all(avatarPromises)
     }
   } catch (error) {
-    ElMessage.error('Failed to fetch users')
-    console.error(error)
+    if (!axios.isCancel(error)) {
+      ElMessage.error('Failed to fetch users')
+      console.error(error)
+    }
   } finally {
     loading.value = false
   }
@@ -140,8 +176,12 @@ const handleSortChange = ({ prop, order }: { prop?: string; order?: string }) =>
   fetchUsers()
 }
 
-// Lifecycle
+// Lifecycle hooks
 onMounted(() => {
   fetchUsers()
+})
+
+onUnmounted(() => {
+  controller.abort() // Cancel any pending requests when component unmounts
 })
 </script>
