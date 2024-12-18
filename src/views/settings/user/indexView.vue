@@ -1,27 +1,46 @@
 <template>
-  <div class="p-6 min-h-screen bg-white dark:bg-gray-800">
-    <div class="max-w-7xl mx-auto">
-      <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
+  <div class="p-4 sm:p-6 min-h-screen bg-white dark:bg-gray-800">
+    <!-- Header with Search - Reduced top margin -->
+    <div
+      class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4"
+    >
+      <div class="w-full sm:w-96">
+        <el-input
+          v-model="searchQuery"
+          placeholder="Search users..."
+          clearable
+          @clear="handleSearch"
+          @input="handleSearch"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
       </div>
+      <el-button type="primary" class="w-full sm:w-auto">
+        <el-icon class="mr-2"><Plus /></el-icon>
+        Add User
+      </el-button>
+    </div>
 
-      <!-- Table Card -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg shadow">
+    <!-- Table Container with Horizontal Scroll -->
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow">
+      <div class="overflow-x-auto">
         <el-table
           v-loading="loading"
           :data="users"
-          class="w-full"
-          :header-cell-class-name="'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200'"
-          :cell-class-name="'text-gray-800 dark:text-gray-300'"
+          :stripe="true"
           :border="true"
+          class="w-full"
+          :header-cell-class-name="'!text-gray-700 dark:!text-gray-200 !font-semibold'"
+          :row-class-name="tableRowClassName"
           @sort-change="handleSortChange"
         >
-          <el-table-column label="Avatar" width="80" align="center">
-            <template #default="{ row }">
+          <el-table-column label="Avatar" width="80" align="center" fixed="left">
+            <template #default="scope">
               <el-avatar
                 :size="40"
-                :src="row.avatar_url"
+                :src="scope.row.avatar_url"
                 class="ring-2 ring-gray-100 dark:ring-gray-700"
               >
                 <el-icon><UserFilled /></el-icon>
@@ -29,9 +48,15 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="username" label="Username" sortable="custom" min-width="120">
-            <template #default="{ row }">
-              <span class="font-medium">{{ row.username }}</span>
+          <el-table-column
+            prop="username"
+            label="Username"
+            sortable="custom"
+            min-width="120"
+            fixed="left"
+          >
+            <template #default="scope">
+              <span class="font-medium">{{ scope.row.username }}</span>
             </template>
           </el-table-column>
 
@@ -42,34 +67,53 @@
           <el-table-column
             prop="status"
             label="Status"
-            width="120"
+            width="100"
             sortable="custom"
             align="center"
           >
-            <template #default="{ row }">
+            <template #default="scope">
               <el-tag
-                :type="row.status === 1 ? 'success' : 'danger'"
-                class="px-3 py-1"
-                effect="plain"
+                :type="scope.row.status === 1 ? 'success' : 'danger'"
+                class="px-2 py-1"
+                effect="light"
               >
-                {{ row.status === 1 ? 'Active' : 'Inactive' }}
+                {{ scope.row.status === 1 ? 'Active' : 'Inactive' }}
               </el-tag>
             </template>
           </el-table-column>
 
-          <el-table-column prop="create_time" label="Created" sortable="custom" width="180">
-            <template #default="{ row }">
+          <el-table-column prop="create_time" label="Created" sortable="custom" min-width="160">
+            <template #default="scope">
               <span class="text-gray-600 dark:text-gray-400">
-                {{ formatDateTime(row.create_time) }}
+                {{ formatDateTime(scope.row.create_time) }}
               </span>
             </template>
           </el-table-column>
 
-          <el-table-column prop="last_login" label="Last Login" sortable="custom" width="180">
-            <template #default="{ row }">
+          <el-table-column prop="last_login" label="Last Login" sortable="custom" min-width="160">
+            <template #default="scope">
               <span class="text-gray-600 dark:text-gray-400">
-                {{ formatDateTime(row.last_login) }}
+                {{ formatDateTime(scope.row.last_login) }}
               </span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="Actions" width="120" fixed="right" align="center">
+            <template #default="scope">
+              <el-button-group>
+                <el-button
+                  type="primary"
+                  :icon="Edit"
+                  size="small"
+                  @click="handleEdit(scope.row)"
+                />
+                <el-button
+                  type="danger"
+                  :icon="Delete"
+                  size="small"
+                  @click="handleDelete(scope.row)"
+                />
+              </el-button-group>
             </template>
           </el-table-column>
         </el-table>
@@ -81,10 +125,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { UserFilled } from '@element-plus/icons-vue'
 import type { User } from '@/types/User'
 import apiClient from '@/utils/apiClient'
 import axios from 'axios'
+import { Search, Plus, Edit, Delete, UserFilled } from '@element-plus/icons-vue'
 
 // State
 const loading = ref(false)
@@ -93,9 +137,36 @@ const currentSort = ref({
   prop: 'create_time',
   order: 'descending',
 })
+const searchQuery = ref('')
 
 // Add controller for cleanup
 const controller = new AbortController()
+
+// Enhanced row styling function with stronger hover effect
+const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
+  const baseClasses = 'transition-colors duration-150'
+  const hoverClasses = 'hover:bg-gray-100 dark:hover:bg-gray-700/90' // Darker hover effect
+
+  return rowIndex % 2 === 0
+    ? `${baseClasses} ${hoverClasses} bg-white dark:bg-gray-900`
+    : `${baseClasses} ${hoverClasses} bg-green-50/30 dark:bg-gray-800/50`
+}
+
+// Methods for handling row actions
+const handleEdit = (row: User) => {
+  console.log('Edit user:', row)
+  // Implement edit logic
+}
+
+const handleDelete = (row: User) => {
+  console.log('Delete user:', row)
+  // Implement delete logic
+}
+
+const handleSearch = () => {
+  // Implement search functionality
+  // This will be implemented in the next feature
+}
 
 const formatDateTime = (date: string | null): string => {
   if (!date) return 'N/A'
