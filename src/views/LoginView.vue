@@ -97,80 +97,96 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-screen px-4 bg-zinc-200 dark:bg-gray-800">
-    <div class="w-full max-w-md p-6 rounded-md shadow-md bg-gray-100 dark:bg-gray-900">
-      <h2 class="text-2xl font-semibold text-center mb-4 text-gray-800 dark:text-gray-100">
-        Login
-      </h2>
-      <form @submit.prevent="login" class="flex flex-col space-y-4">
-        <el-input
-          v-model="form.username"
-          placeholder="Username"
-          class="w-full"
-          @blur="v$.username.$touch()"
-          @input="sanitizeUsername"
-        >
-          <template #prefix>
-            <UserIcon class="text-gray-400 dark:text-blue-500" />
-          </template>
-        </el-input>
-        <div v-if="v$.username.$dirty && v$.username.$invalid" class="text-red-500 text-sm">
-          <template v-if="v$.username.required.$invalid">
-            <div class="text-xs">Username is required</div>
-          </template>
-          <template v-else-if="v$.username.minLength.$invalid">
-            <div class="text-xs">Username must be at least 3 characters.</div>
-          </template>
-          <template v-else-if="v$.username.maxLength.$invalid">
-            <div class="text-xs">Username cannot exceed 20 characters.</div>
-          </template>
-        </div>
-        <el-input
-          v-model="form.password"
-          placeholder="Password"
-          type="password"
-          class="w-full"
-          @blur="v$.password.$touch()"
-        >
-          <template #prefix>
-            <UserPasswd class="text-gray-400 dark:text-blue-500" />
-          </template>
-        </el-input>
-        <div v-if="v$.password.$dirty && v$.password.$invalid" class="text-red-500 text-sm">
-          <template v-if="v$.password.required.$invalid">
-            <div class="text-xs">Password is required.</div>
-          </template>
-          <template v-else-if="v$.password.minLength.$invalid">
-            <div class="text-xs">Password must be at least 6 characters.</div>
-          </template>
-          <template v-else-if="v$.password.maxLength.$invalid">
-            <div class="text-xs">Password cannot exceed 30 characters.</div>
-          </template>
-        </div>
-        <el-checkbox
-          v-model="form.rememberMe"
-          class="text-xs text-zinc-400 dark:text-zinc-300 italic"
-          >Remember me</el-checkbox
-        >
-        <el-button
-          type="primary"
-          @click="login"
-          class="w-full block mt-4"
-          :loading="loading"
-          :disabled="v$.$invalid || loading"
-          native-type="submit"
-          >Login</el-button
-        >
+  <div
+    class="flex items-center justify-center min-h-screen px-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800"
+  >
+    <div class="w-full max-w-md">
+      <!-- Logo Section -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">VueSys</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Welcome back!</p>
+      </div>
 
-        <div class="flex items-center justify-center mt-4 text-sm">
-          <router-link
-            to="/signup"
-            class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Don't have an account? Sign up
-          </router-link>
+      <!-- Login Card -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg transition-all duration-300">
+        <div class="p-8">
+          <form @submit.prevent="login" class="space-y-6">
+            <!-- Username Input -->
+            <div class="space-y-2">
+              <el-input
+                v-model="form.username"
+                placeholder="Username"
+                :class="{ 'is-invalid': v$.username.$error }"
+                @blur="v$.username.$touch()"
+                @input="sanitizeUsername"
+              >
+                <template #prefix>
+                  <UserIcon class="text-gray-400 dark:text-blue-500" />
+                </template>
+              </el-input>
+              <div v-if="v$.username.$error" class="text-red-500 text-xs pl-1">
+                <span v-if="v$.username.required.$invalid">Username is required</span>
+                <span v-else-if="v$.username.minLength.$invalid">Minimum 3 characters</span>
+              </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="space-y-2">
+              <el-input
+                v-model="form.password"
+                type="password"
+                placeholder="Password"
+                :class="{ 'is-invalid': v$.password.$error }"
+                @blur="v$.password.$touch()"
+                show-password
+              >
+                <template #prefix>
+                  <UserPasswd class="text-gray-400 dark:text-blue-500" />
+                </template>
+              </el-input>
+              <div v-if="v$.password.$error" class="text-red-500 text-xs pl-1">
+                <span v-if="v$.password.required.$invalid">Password is required</span>
+                <span v-else-if="v$.password.minLength.$invalid">Minimum 6 characters</span>
+              </div>
+            </div>
+
+            <!-- Remember Me -->
+            <div class="flex items-center justify-between">
+              <el-checkbox
+                v-model="form.rememberMe"
+                class="italic text-sm text-gray-600 dark:text-gray-400"
+              >
+                Remember me
+              </el-checkbox>
+              <!-- TODO: Add Forgot Password Link Feature -->
+              <!-- <a href="#" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
+                Forgot password?
+              </a> -->
+            </div>
+
+            <!-- Login Button -->
+            <el-button
+              type="primary"
+              native-type="submit"
+              :loading="loading"
+              :disabled="v$.$invalid"
+              class="w-full py-2 bg-gradient-to-r from-blue-500 to-blue-600"
+            >
+              {{ loading ? 'Logging in...' : 'Login' }}
+            </el-button>
+
+            <!-- Sign Up Link -->
+            <div class="text-center mt-6">
+              <router-link
+                to="/signup"
+                class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+              >
+                Don't have an account? Sign up
+              </router-link>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
