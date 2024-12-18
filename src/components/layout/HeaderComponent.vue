@@ -1,60 +1,117 @@
 <template>
-  <el-header class="bg-blue-100 shadow-md p-4">
-    <div class="flex items-center justify-between mx-auto">
-      <div class="flex items-center space-x-4">
-        <el-button @click="toggleCollapse" class="p-2 hover:bg-blue-200 rounded-lg dark:text-white">
-          <el-icon>
+  <el-header class="bg-white dark:bg-gray-800 shadow-md border-b dark:border-gray-700 p-0">
+    <div class="h-16 px-4 flex items-center justify-between">
+      <!-- Left Section -->
+      <div class="flex items-center gap-4">
+        <el-button
+          @click="toggleCollapse"
+          class="!flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2 transition-transform duration-200"
+          :class="{ 'transform rotate-180': isCollapsed }"
+        >
+          <el-icon class="text-gray-500 dark:text-gray-400">
             <Menu />
           </el-icon>
         </el-button>
-        <div class="text-lg font-semibold text-gray-800 dark:text-white">VueSys</div>
+
+        <div class="hidden md:flex items-center gap-2">
+          <span
+            class="text-lg font-semibold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent"
+          >
+            VueSys
+          </span>
+        </div>
       </div>
-      <div class="flex items-center space-x-4">
-        <!-- Search Bar -->
+
+      <!-- Center Section - Search -->
+      <div class="flex-grow max-w-2xl mx-4 hidden md:block">
         <el-input
           v-model="searchText"
-          placeholder="Search"
-          class="max-w-md hidden md:block"
-          :bg="isDarkMode ? 'dark:bg-gray-700' : 'bg-white'"
-          :input-style="{
-            color: isDarkMode ? '#fff' : '#000',
-          }"
+          placeholder="Search..."
+          class="w-full !bg-gray-50 dark:!bg-gray-700"
         >
           <template #prefix>
-            <el-icon class="text-blue-400"><Search /></el-icon>
+            <el-icon class="text-gray-400"><Search /></el-icon>
+          </template>
+          <template #suffix v-if="searchText">
+            <el-icon
+              class="cursor-pointer text-gray-400 hover:text-gray-600"
+              @click="searchText = ''"
+            >
+              <Close />
+            </el-icon>
           </template>
         </el-input>
-        <!-- Theme Switcher -->
+      </div>
+
+      <!-- Right Section -->
+      <div class="flex items-center gap-3">
+        <!-- Mobile Search Toggle -->
+        <el-button
+          class="sm:flex md:hidden items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2"
+          @click="toggleMobileSearch"
+        >
+          <el-icon class="text-gray-500 dark:text-gray-400">
+            <Search />
+          </el-icon>
+        </el-button>
+
+        <!-- Theme Switch -->
         <el-switch
           v-model="isDarkMode"
           @change="toggleTheme"
-          class="mx-4"
           inline-prompt
-          :active-icon="Sunrise"
-          :inactive-icon="Moon"
-          size="default"
+          :active-icon="Moon"
+          :inactive-icon="Sunrise"
+          class="mr-2"
         />
-        <!-- User Profile Dropdown -->
+        <!--
+        TODO: Notifications
+        <el-badge :value="3" class="hidden sm:block">
+          <el-button
+            class="!flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2"
+          >
+            <el-icon class="text-gray-500 dark:text-gray-400">
+              <Bell />
+            </el-icon>
+          </el-button>
+        </el-badge> -->
+
+        <!-- User Profile -->
         <el-dropdown @command="handleCommand" trigger="click">
-          <el-avatar :icon="UserFilled" class="cursor-pointer" size="small" />
+          <div
+            class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2"
+          >
+            <el-avatar :size="32" class="bg-blue-500">
+              {{ user?.username?.charAt(0).toUpperCase() }}
+            </el-avatar>
+            <span class="hidden sm:block text-sm text-gray-700 dark:text-gray-300">
+              {{ user?.username }}
+            </span>
+            <el-icon class="text-gray-400">
+              <CaretBottom />
+            </el-icon>
+          </div>
+
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="Profile">
-                <div class="flex items-center">
-                  <el-icon class="mr-2"><User /></el-icon>
-                  Profile
+            <el-dropdown-menu
+              class="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700"
+            >
+              <el-dropdown-item command="Profile" class="!text-gray-700 dark:!text-gray-300">
+                <div class="flex items-center gap-2">
+                  <el-icon><User /></el-icon>
+                  <span>Profile</span>
                 </div>
               </el-dropdown-item>
-              <el-dropdown-item command="Settings">
-                <div class="flex items-center">
-                  <el-icon class="mr-2"><Setting /></el-icon>
-                  Settings
+              <el-dropdown-item command="Settings" class="!text-gray-700 dark:!text-gray-300">
+                <div class="flex items-center gap-2">
+                  <el-icon><Setting /></el-icon>
+                  <span>Settings</span>
                 </div>
               </el-dropdown-item>
-              <el-dropdown-item command="Logout">
-                <div class="flex items-center">
-                  <el-icon class="mr-2"><SwitchButton /></el-icon>
-                  Logout
+              <el-dropdown-item divided command="Logout" class="!text-red-500">
+                <div class="flex items-center gap-2">
+                  <el-icon><SwitchButton /></el-icon>
+                  <span>Logout</span>
                 </div>
               </el-dropdown-item>
             </el-dropdown-menu>
@@ -62,47 +119,76 @@
         </el-dropdown>
       </div>
     </div>
+
+    <!-- Mobile Search Bar -->
+    <div
+      v-if="showMobileSearch"
+      class="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-800 px-4 py-6 transition-opacity duration-200 ease-in-out"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Search</h2>
+        <button
+          @click="toggleMobileSearch"
+          class="text-gray-500 hover:text-gray-700 dark:text-gray-300"
+        >
+          <el-icon><Close /></el-icon>
+        </button>
+      </div>
+      <el-input
+        v-model="searchText"
+        placeholder="Type to search..."
+        class="w-full bg-gray-50 dark:bg-gray-700"
+      >
+        <template #prefix>
+          <el-icon class="text-gray-400"><Search /></el-icon>
+        </template>
+        <template #suffix v-if="searchText">
+          <el-icon
+            class="cursor-pointer text-gray-400 hover:text-gray-600"
+            @click="searchText = ''"
+          >
+            <Close />
+          </el-icon>
+        </template>
+      </el-input>
+    </div>
   </el-header>
 </template>
 
 <script setup lang="ts">
 import {
-  ElHeader,
-  ElInput,
-  ElDropdown,
-  ElAvatar,
-  ElIcon,
-  ElDropdownMenu,
-  ElDropdownItem,
-  ElSwitch,
-} from 'element-plus'
-import {
   Search,
-  UserFilled,
+  Close,
+  // Bell,  // Uncomment when notifications are implemented
+  Menu,
+  Setting,
+  User,
   Moon,
   Sunrise,
-  Menu,
-  User,
-  Setting,
+  CaretBottom,
   SwitchButton,
 } from '@element-plus/icons-vue'
 import { ref, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useAuthStore } from '@/stores/authStore'
+import { useTabStore } from '@/stores/tabStore'
 import { useRouter } from 'vue-router'
 import { useIsCollapsedStore } from '@/stores/isCollapsedStore'
-import { useTabStore } from '@/stores/tabStore'
 
-const tabStore = useTabStore()
 const homeLayoutStore = useIsCollapsedStore()
 const authStore = useAuthStore()
+const tabStore = useTabStore()
 const router = useRouter()
 const searchText = ref('')
+const showMobileSearch = ref(false)
+
+const isCollapsed = computed(() => homeLayoutStore.isCollapsed)
+const user = computed(() => authStore.user)
+
 const themeStore = useThemeStore()
 const isDarkMode = computed(() => themeStore.isDarkMode)
 
 const toggleCollapse = () => homeLayoutStore.toggleCollapse()
-
 const toggleTheme = () => themeStore.toggleDarkMode()
 
 const handleCommand = async (command: string) => {
@@ -113,7 +199,7 @@ const handleCommand = async (command: string) => {
         id: 'profile',
         title: 'Profile',
         path: '/profile',
-        component: 'profile', // This maps to the profile component
+        component: 'profile',
         closeable: true,
       })
       break
@@ -127,4 +213,10 @@ const handleCommand = async (command: string) => {
       break
   }
 }
+
+const toggleMobileSearch = () => {
+  showMobileSearch.value = !showMobileSearch.value
+}
 </script>
+
+<style lang="scss" scoped></style>
