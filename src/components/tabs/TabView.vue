@@ -1,44 +1,67 @@
 <template>
-  <div class="flex flex-col h-full">
-    <el-tabs
-      v-model="activeTab"
-      type="card"
-      closable
-      @tab-click="handleTabClick"
-      @tab-remove="handleTabRemove"
-      class="bg-white"
-    >
-      <el-tab-pane
-        v-for="tab in visibleTabs"
-        :key="tab.id"
-        :label="tab.title"
-        :name="tab.id"
-        :closable="tab.closeable"
+  <div class="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+    <!-- Tab Navigation -->
+    <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-2">
+      <el-tabs
+        v-model="activeTab"
+        type="card"
+        closable
+        @tab-click="handleTabClick"
+        @tab-remove="handleTabRemove"
+        class="min-h-[40px] !border-0"
       >
-        <template #label>
-          <el-icon v-if="tab.icon" class="mr-1">
-            <component :is="tab.icon" />
-          </el-icon>
-          <span>{{ tab.title }}</span>
-        </template>
-      </el-tab-pane>
-    </el-tabs>
+        <el-tab-pane
+          v-for="tab in visibleTabs"
+          :key="tab.id"
+          :label="tab.title"
+          :name="tab.id"
+          :closable="tab.closeable"
+        >
+          <template #label>
+            <div class="flex items-center gap-1 px-1">
+              <el-icon v-if="tab.icon" class="text-gray-500 dark:text-gray-400">
+                <component :is="tab.icon" />
+              </el-icon>
+              <span class="truncate max-w-[120px]">{{ tab.title }}</span>
+            </div>
+          </template>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
 
-    <div class="flex-1 overflow-auto p-4 bg-gray-50">
-      <component :is="currentComponent" v-if="currentComponent" :key="activeTab" />
+    <!-- Tab Content Area -->
+    <div class="flex-1 overflow-auto p-4">
+      <transition
+        enter-active-class="transition-opacity duration-200 ease-in"
+        leave-active-class="transition-opacity duration-200 ease-out"
+        enter-from-class="opacity-0"
+        leave-to-class="opacity-0"
+        mode="out-in"
+      >
+        <div :key="activeTab" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <component :is="currentComponent" v-if="currentComponent" />
+          <div v-else-if="activeTab === 'dashboard'" class="space-y-4">
+            <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+              Welcome to Dashboard
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">Select a menu item to get started.</p>
+          </div>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, type Component } from 'vue'
+import { computed, ref, watch } from 'vue'
+import type { Component } from 'vue'
 import { useTabStore } from '@/stores/tabStore'
 import type { TabPaneClick } from '@/types/TabPaneClick'
 import { markRaw } from 'vue'
 
 const currentComponent = ref<Component | null>(null)
 
-// Define the components map
+// Define the components map with lazy loading
 const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'bizm/Department': () => import('@/views/bizm/DepartmentView.vue'),
   'bizm/DepartmentView': () => import('@/views/bizm/DepartmentView.vue'),
@@ -47,12 +70,13 @@ const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'settings/user/index': () => import('@/views/settings/user/indexView.vue'),
   'settings/role/index': () => import('@/views/settings/role/indexView.vue'),
   'settings/menu/index': () => import('@/views/settings/menu/indexView.vue'),
-  'profile': () => import('@/views/ProfileView.vue'),
+  profile: () => import('@/views/ProfileView.vue'),
+  // settings: () => import('@/views/SettingsView.vue'),  // TODO: Uncomment when SettingsView is implemented
 }
 
 const tabStore = useTabStore()
 
-// Watch for changes and save to sessionStorage
+// Watch for tab changes and save to sessionStorage
 watch(
   () => tabStore.tabs,
   (newTabs) => {
@@ -62,21 +86,18 @@ watch(
 )
 
 const loadComponent = async (componentPath: string) => {
-  console.log('Loading component path:', componentPath)
   try {
     if (componentPath === 'dashboard') {
       return null
     }
 
-    // Normalize the component path
     const normalizedPath = componentPath.replace(/^\/+/, '')
 
     if (normalizedPath in componentMap) {
       const module = await componentMap[normalizedPath]()
       return markRaw(module.default)
     } else {
-      console.error(`Component not found in map: ${normalizedPath}`)
-      console.log('Available components:', Object.keys(componentMap))
+      console.warn(`Component not found in map: ${normalizedPath}`)
       return null
     }
   } catch (error) {
