@@ -14,13 +14,13 @@ const isThemeSwitcherVisible = computed(() => uiStore.isThemeSwitcherVisible)
 // Import useRoute to access the current route
 const route = useRoute()
 
-// Computed property to check if the current route is the login page
-const isLoginPage = computed(() => route.name === 'Login')
+// Check if current route is an auth page (login or signup)
+const isAuthPage = computed(() => ['Login', 'Signup'].includes(route.name as string))
 </script>
 
 <template>
-  <!-- Render only when on the login page -->
-  <div v-if="isLoginPage">
+  <!-- Render layout components for auth pages -->
+  <div v-if="isAuthPage">
     <!-- Theme Switcher Button -->
     <ThemeSwitcher v-if="isThemeSwitcherVisible" />
 

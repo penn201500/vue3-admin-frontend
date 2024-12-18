@@ -57,6 +57,4 @@ const hideFloatingHeader = () => {
 }
 </script>
 
-<style scoped>
-/* Add any component-specific styles here if necessary */
-</style>
+<style lang="scss" scoped></style>
