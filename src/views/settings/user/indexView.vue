@@ -78,6 +78,24 @@
             </template>
           </el-table-column>
 
+          <el-table-column prop="comment" label="Comment" min-width="200">
+            <template #default="scope">
+              <el-tooltip
+                v-if="scope.row.comment && scope.row.comment.length > 20"
+                :content="scope.row.comment"
+                placement="top"
+                :show-after="200"
+              >
+                <span class="text-gray-600 dark:text-gray-400">
+                  {{ truncateText(scope.row.comment, 20) }}
+                </span>
+              </el-tooltip>
+              <span v-else class="text-gray-600 dark:text-gray-400">
+                {{ scope.row.comment || 'N/A' }}
+              </span>
+            </template>
+          </el-table-column>
+
           <el-table-column label="Actions" width="120" align="center">
             <template #default="scope">
               <el-button-group>
@@ -151,6 +169,20 @@
                 <div class="text-gray-500">Last Login</div>
                 <div>{{ formatDateTime(user.last_login) }}</div>
               </div>
+              <div>
+                <div class="text-gray-500">Comment</div>
+                <div class="truncate">
+                  <el-tooltip
+                    v-if="user.comment && user.comment.length > 20"
+                    :content="user.comment"
+                    placement="top"
+                    :show-after="200"
+                  >
+                    <span>{{ truncateText(user.comment, 20) }}</span>
+                  </el-tooltip>
+                  <span v-else>{{ user.comment || 'N/A' }}</span>
+                </div>
+              </div>
             </div>
 
             <!-- Actions -->
@@ -203,6 +235,12 @@ const total = ref(0)
 
 // Add controller for cleanup
 const controller = new AbortController()
+
+// Truncate if text is too long
+const truncateText = (text: string | null, length: number): string => {
+  if (!text) return 'N/A'
+  return text.length > length ? `${text.slice(0, length)}...` : text
+}
 
 // Enhanced row styling function with stronger hover effect
 const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
