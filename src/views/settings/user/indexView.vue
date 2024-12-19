@@ -30,7 +30,7 @@
           :data="users"
           :stripe="true"
           :border="true"
-          class="w-full"
+          class="w-full mb-4"
           :header-cell-class-name="'!text-gray-700 dark:!text-gray-200 !font-semibold'"
           :row-class-name="tableRowClassName"
           @sort-change="handleSortChange"
@@ -48,7 +48,13 @@
           <el-table-column prop="email" label="Email" sortable="custom" />
           <el-table-column prop="phone" label="Phone" />
 
-          <el-table-column prop="status" label="Status" width="120" sortable="custom" align="center">
+          <el-table-column
+            prop="status"
+            label="Status"
+            width="120"
+            sortable="custom"
+            align="center"
+          >
             <template #default="scope">
               <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
                 {{ scope.row.status === 1 ? 'Active' : 'Inactive' }}
@@ -75,12 +81,34 @@
           <el-table-column label="Actions" width="120" align="center">
             <template #default="scope">
               <el-button-group>
-                <el-button type="primary" :icon="Edit" size="small" @click="handleEdit(scope.row)" />
-                <el-button type="danger" :icon="Delete" size="small" @click="handleDelete(scope.row)" />
+                <el-button
+                  type="primary"
+                  :icon="Edit"
+                  size="small"
+                  @click="handleEdit(scope.row)"
+                />
+                <el-button
+                  type="danger"
+                  :icon="Delete"
+                  size="small"
+                  @click="handleDelete(scope.row)"
+                />
               </el-button-group>
             </template>
           </el-table-column>
         </el-table>
+        <!-- Desktop Pagination -->
+        <div class="flex justify-end mt-4">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 30, 50, 100]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
       </div>
 
       <!-- Mobile View (sm and down) -->
@@ -136,6 +164,16 @@
             </div>
           </div>
         </div>
+        <!-- Mobile Pagination -->
+        <div class="flex justify-center mt-6">
+          <el-pagination
+            v-model:current-page="currentPage"
+            :page-size="pageSize"
+            :total="total"
+            layout="prev, pager, next"
+            @current-change="handleCurrentChange"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -157,6 +195,11 @@ const currentSort = ref({
   order: 'descending',
 })
 const searchQuery = ref('')
+
+// Pagination state
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // Add controller for cleanup
 const controller = new AbortController()
@@ -221,13 +264,18 @@ const fetchUsers = async () => {
     }
 
     const response = await apiClient.get('/user/api/users/', {
-      params: ordering ? { ordering } : undefined,
+      params: {
+        ordering,
+        page: currentPage.value,
+        pageSize: pageSize.value,
+      },
       signal: controller.signal,
     })
 
     if (response.data.code === 200) {
       // Store users first
       users.value = response.data.data
+      total.value = response.data.count // Total count from backend
 
       // Fetch avatars for all users
       const avatarPromises = users.value.map((user) =>
@@ -263,6 +311,17 @@ const handleSortChange = ({ prop, order }: { prop?: string; order?: string }) =>
   } else {
     currentSort.value = { prop, order }
   }
+  fetchUsers()
+}
+
+// Pagination handlers
+const handleSizeChange = (val: number) => {
+  pageSize.value = val
+  fetchUsers()
+}
+
+const handleCurrentChange = (val: number) => {
+  currentPage.value = val
   fetchUsers()
 }
 
