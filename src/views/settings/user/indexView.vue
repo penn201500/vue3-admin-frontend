@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-800">
+  <div class="bg-white dark:bg-gray-800">
     <!-- Main Container -->
-    <div class="p-4 sm:p-6">
+    <div class="p-1">
       <!-- Search Bar Container -->
-      <div class="w-full flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+      <div class="w-full flex flex-col sm:flex-row justify-between items-center gap-2 mb-2">
         <div class="w-full sm:w-96">
           <el-input
             v-model="searchQuery"
@@ -38,20 +38,20 @@
           <!-- Original table columns -->
           <el-table-column label="Avatar" width="80" align="center">
             <template #default="scope">
-              <el-avatar :size="40" :src="scope.row.avatar_url">
+              <el-avatar :size="36" :src="scope.row.avatar_url">
                 <el-icon><UserFilled /></el-icon>
               </el-avatar>
             </template>
           </el-table-column>
 
           <el-table-column prop="username" label="Username" sortable="custom" />
-          <el-table-column prop="email" label="Email" sortable="custom" />
-          <el-table-column prop="phone" label="Phone" />
+          <el-table-column prop="email" label="Email" width="200" sortable="custom" />
+          <el-table-column prop="phone" width="120" label="Phone" />
 
           <el-table-column
             prop="status"
             label="Status"
-            width="120"
+            width="90"
             sortable="custom"
             align="center"
           >
@@ -62,7 +62,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="create_time" label="Created" sortable="custom">
+          <el-table-column prop="create_time" label="Created" sortable="custom" width="200">
             <template #default="scope">
               <span class="text-gray-600 dark:text-gray-400">
                 {{ formatDateTime(scope.row.create_time) }}
@@ -70,7 +70,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="last_login" label="Last Login" sortable="custom">
+          <el-table-column prop="last_login" label="Last Login" sortable="custom" width="200">
             <template #default="scope">
               <span class="text-gray-600 dark:text-gray-400">
                 {{ formatDateTime(scope.row.last_login) }}
@@ -116,7 +116,7 @@
           </el-table-column>
         </el-table>
         <!-- Desktop Pagination -->
-        <div class="flex justify-end mt-4">
+        <div class="flex justify-end mt-1">
           <el-pagination
             v-model:current-page="currentPage"
             v-model:page-size="pageSize"
@@ -244,7 +244,7 @@ const truncateText = (text: string | null, length: number): string => {
 
 // Enhanced row styling function with stronger hover effect
 const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
-  const baseClasses = 'transition-colors duration-150'
+  const baseClasses = 'transition-colors duration-150 !py-1'
   const hoverClasses = 'hover:bg-gray-100 dark:hover:bg-gray-700/90' // Darker hover effect
 
   return rowIndex % 2 === 0
