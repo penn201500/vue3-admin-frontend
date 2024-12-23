@@ -7,13 +7,20 @@
         <div class="w-full sm:w-96">
           <el-input
             v-model="searchQuery"
-            placeholder="Search users..."
+            placeholder="Search by username, email, phone or comment..."
             clearable
-            @clear="handleSearch"
+            :loading="searchLoading"
+            @clear="clearSearch"
             @input="handleSearch"
+            @keyup.enter="handleEnterSearch"
           >
             <template #prefix>
               <el-icon><Search /></el-icon>
+            </template>
+            <template #suffix>
+              <el-icon v-if="searchLoading" class="animate-spin">
+                <Loading />
+              </el-icon>
             </template>
           </el-input>
         </div>
@@ -48,13 +55,7 @@
           <el-table-column prop="email" label="Email" width="200" sortable="custom" />
           <el-table-column prop="phone" width="120" label="Phone" />
 
-          <el-table-column
-            prop="status"
-            label="Status"
-            width="90"
-            sortable="custom"
-            align="center"
-          >
+          <el-table-column prop="status" label="Status" width="90" sortable="custom" align="center">
             <template #default="scope">
               <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
                 {{ scope.row.status === 1 ? 'Active' : 'Inactive' }}
@@ -219,6 +220,21 @@ import apiClient from '@/utils/apiClient'
 import axios from 'axios'
 import { Search, Plus, Edit, Delete, UserFilled } from '@element-plus/icons-vue'
 
+// Search
+interface SearchParams {
+  search?: string // General search term
+  username?: string // Specific field searches
+  email?: string
+  phone?: string
+  comment?: string
+  ordering?: string // Keep existing ordering
+  page?: number
+  pageSize?: number
+}
+const searchQuery = ref('')
+const searchTimeout = ref<number | null>(null)
+const searchLoading = ref(false)
+
 // State
 const loading = ref(false)
 const users = ref<User[]>([])
@@ -226,7 +242,6 @@ const currentSort = ref({
   prop: 'create_time',
   order: 'descending',
 })
-const searchQuery = ref('')
 
 // Pagination state
 const currentPage = ref(1)
@@ -263,9 +278,17 @@ const handleDelete = (row: User) => {
   // Implement delete logic
 }
 
+// Implement the debounced search handler
 const handleSearch = () => {
-  // Implement search functionality
-  // This will be implemented in the next feature
+  if (searchTimeout.value) {
+    window.clearTimeout(searchTimeout.value)
+  }
+
+  searchTimeout.value = window.setTimeout(() => {
+    searchLoading.value = true
+    currentPage.value = 1 // Reset to first page when searching
+    fetchUsers()
+  }, 800) // 300ms debounce
 }
 
 const formatDateTime = (date: string | null): string => {
@@ -301,12 +324,25 @@ const fetchUsers = async () => {
           : `-${currentSort.value.prop}`
     }
 
+    // Construct search parameters
+    const params: SearchParams = {
+      page: currentPage.value,
+      pageSize: pageSize.value,
+      ordering,
+    }
+
+    // Add search term if exists
+    if (searchQuery.value) {
+      // Add search parameters for each field
+      params.search = searchQuery.value // General search
+      params.username = searchQuery.value
+      params.email = searchQuery.value
+      params.phone = searchQuery.value
+      params.comment = searchQuery.value
+    }
+
     const response = await apiClient.get('/user/api/users/', {
-      params: {
-        ordering,
-        page: currentPage.value,
-        pageSize: pageSize.value,
-      },
+      params,
       signal: controller.signal,
     })
 
@@ -337,7 +373,29 @@ const fetchUsers = async () => {
     }
   } finally {
     loading.value = false
+    searchLoading.value = false
   }
+}
+
+
+
+// Add immediate search handler for enter key
+const handleEnterSearch = () => {
+  if (searchTimeout.value) {
+    window.clearTimeout(searchTimeout.value)
+  }
+  searchLoading.value = true
+  currentPage.value = 1
+  fetchUsers()
+}
+
+// Clear search
+// Update the clear search function
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchLoading.value = true
+  currentPage.value = 1
+  fetchUsers()
 }
 
 const handleSortChange = ({ prop, order }: { prop?: string; order?: string }) => {
@@ -369,6 +427,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (searchTimeout.value) {
+    // Clean up search timeout
+    window.clearTimeout(searchTimeout.value)
+  }
   controller.abort() // Cancel any pending requests when component unmounts
 })
 </script>
