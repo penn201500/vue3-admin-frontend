@@ -164,8 +164,28 @@
                   <el-icon><UserFilled /></el-icon>
                 </el-avatar>
                 <div>
-                  <div class="font-medium">{{ user.username }}</div>
-                  <div class="text-sm text-gray-500">{{ user.email }}</div>
+                  <div class="font-medium truncate text-xs">
+                    <el-tooltip
+                      v-if="user.username && user.username.length > 12"
+                      :content="user.username"
+                      placement="top"
+                      :show-after="200"
+                    >
+                      <span>{{ truncateText(user.username, 12) }}</span>
+                    </el-tooltip>
+                    <span v-else>{{ user.username || 'N/A' }}</span>
+                  </div>
+                  <div class="font-medium truncate text-xs mr-1">
+                    <el-tooltip
+                      v-if="user.email && user.email.length > 12"
+                      :content="user.email"
+                      placement="top"
+                      :show-after="200"
+                    >
+                      <span>{{ truncateText(user.email, 12) }}</span>
+                    </el-tooltip>
+                    <span v-else>{{ user.email || 'N/A' }}</span>
+                  </div>
                 </div>
               </div>
               <el-tag :type="user.status === 1 ? 'success' : 'danger'">
