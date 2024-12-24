@@ -179,16 +179,16 @@
             <div class="grid grid-cols-2 gap-4 text-sm mb-4">
               <div>
                 <div class="text-gray-500">Phone</div>
-                <div>{{ user.phone || 'N/A' }}</div>
+                <div class="text-xs">{{ user.phone || 'N/A' }}</div>
               </div>
               <div>
                 <div class="text-gray-500">Created</div>
-                <div>{{ formatDateTime(user.create_time) }}</div>
+                <div class="text-xs">{{ formatDateTime(user.create_time) }}</div>
               </div>
               <!-- Roles added here  -->
               <div>
                 <div class="text-gray-500">Roles</div>
-                <div class="flex gap-1 flex-wrap">
+                <div class="flex gap-1 flex-wrap text-xs">
                   <el-tag
                     v-for="role in user.roles"
                     :key="role.id"
@@ -202,11 +202,11 @@
               </div>
               <div>
                 <div class="text-gray-500">Last Login</div>
-                <div>{{ formatDateTime(user.last_login) }}</div>
+                <div class="text-xs">{{ formatDateTime(user.last_login) }}</div>
               </div>
               <div>
                 <div class="text-gray-500">Comment</div>
-                <div class="truncate">
+                <div class="truncate text-xs">
                   <el-tooltip
                     v-if="user.comment && user.comment.length > 20"
                     :content="user.comment"
