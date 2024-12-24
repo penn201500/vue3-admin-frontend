@@ -54,7 +54,7 @@
 
           <el-table-column prop="username" label="Username" sortable="custom" />
           <!-- Add Role column after Username -->
-          <el-table-column label="Roles" width="120">
+          <el-table-column label="Roles" width="220">
             <template #default="scope">
               <div class="flex gap-1 flex-wrap">
                 <el-tag
