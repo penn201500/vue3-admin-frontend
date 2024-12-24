@@ -225,8 +225,14 @@
               <el-button type="primary" size="small" @click="handleEdit(user)">
                 <el-icon class="mr-1"><Edit /></el-icon>Edit
               </el-button>
-              <el-button type="danger" size="small" @click="handleDelete(user)">
-                <el-icon class="mr-1"><Delete /></el-icon>Delete
+              <el-button
+                v-if="!hasAdminRoleUser(user)"
+                type="danger"
+                :icon="Delete"
+                size="small"
+                @click="handleDelete(user)"
+              >
+                Delete
               </el-button>
             </div>
           </div>
