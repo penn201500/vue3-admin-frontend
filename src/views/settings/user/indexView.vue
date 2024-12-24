@@ -24,7 +24,8 @@
             </template>
           </el-input>
         </div>
-        <el-button type="primary">
+        <!-- Only show Add User button for users with admin role -->
+        <el-button v-if="hasAdminRole" type="primary" @click="handleAddUser">
           <el-icon class="mr-2"><Plus /></el-icon>
           Add User
         </el-button>
@@ -52,6 +53,22 @@
           </el-table-column>
 
           <el-table-column prop="username" label="Username" sortable="custom" />
+          <!-- Add Role column after Username -->
+          <el-table-column label="Roles" width="120">
+            <template #default="scope">
+              <div class="flex gap-1 flex-wrap">
+                <el-tag
+                  v-for="role in scope.row.roles"
+                  :key="role.id"
+                  :type="role.code === 'admin' ? 'danger' : 'info'"
+                  size="small"
+                  class="mr-1"
+                >
+                  {{ role.name }}
+                </el-tag>
+              </div>
+            </template>
+          </el-table-column>
           <el-table-column prop="email" label="Email" width="200" sortable="custom" />
           <el-table-column prop="phone" width="120" label="Phone" />
 
@@ -106,7 +123,9 @@
                   size="small"
                   @click="handleEdit(scope.row)"
                 />
+                <!-- Only show delete button for users without admin role -->
                 <el-button
+                  v-if="!hasAdminRoleUser(scope.row)"
                   type="danger"
                   :icon="Delete"
                   size="small"
@@ -213,12 +232,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { User } from '@/types/User'
 import apiClient from '@/utils/apiClient'
 import axios from 'axios'
-import { Search, Plus, Edit, Delete, UserFilled } from '@element-plus/icons-vue'
+import { Search, Plus, Edit, Delete, UserFilled, Loading } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/authStore'
+import type { Role } from '@/types/Role'
 
 // Search
 interface SearchParams {
@@ -247,6 +268,19 @@ const currentSort = ref({
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+
+const authStore = useAuthStore()
+
+// Check if current user has admin role
+const hasAdminRole = computed(() => {
+  console.log('Checking admin role:', authStore.user)
+  return authStore.user?.roles?.some((role: Role) => role.code === 'admin') ?? false
+})
+
+// Helper function to check if a user has admin role
+const hasAdminRoleUser = (user: User) => {
+  return user.roles.some((role: Role) => role.code === 'admin')
+}
 
 // Add controller for cleanup
 const controller = new AbortController()
@@ -277,6 +311,8 @@ const handleDelete = (row: User) => {
   console.log('Delete user:', row)
   // Implement delete logic
 }
+
+const handleAddUser = {}
 
 // Implement the debounced search handler
 const handleSearch = () => {
@@ -376,8 +412,6 @@ const fetchUsers = async () => {
     searchLoading.value = false
   }
 }
-
-
 
 // Add immediate search handler for enter key
 const handleEnterSearch = () => {

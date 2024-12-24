@@ -1,6 +1,9 @@
+import type { Role } from "./Role"
+
 export interface User {
   id: number
   username: string
+  roles: Role[]
   email: string | null
   avatar: string | null
   phone: string | null
