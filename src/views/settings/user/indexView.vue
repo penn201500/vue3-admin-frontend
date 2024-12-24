@@ -185,6 +185,21 @@
                 <div class="text-gray-500">Created</div>
                 <div>{{ formatDateTime(user.create_time) }}</div>
               </div>
+              <!-- Roles added here  -->
+              <div>
+                <div class="text-gray-500">Roles</div>
+                <div class="flex gap-1 flex-wrap">
+                  <el-tag
+                    v-for="role in user.roles"
+                    :key="role.id"
+                    :type="role.code === 'admin' ? 'danger' : 'info'"
+                    size="small"
+                    class="mr-1"
+                  >
+                    {{ role.name }}
+                  </el-tag>
+                </div>
+              </div>
               <div>
                 <div class="text-gray-500">Last Login</div>
                 <div>{{ formatDateTime(user.last_login) }}</div>
