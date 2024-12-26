@@ -154,15 +154,25 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="flex justify-center space-x-4 mt-6">
-          <el-button @click="onProfileReset" :disabled="!isFormDirty"> Reset </el-button>
+        <div class="flex justify-center space-x-2 mt-6">
+          <el-button @click="onProfileReset" :disabled="!isFormDirty">
+            <span class="hidden sm:inline">Reset Changes</span>
+            <span class="sm:hidden">Reset</span>
+          </el-button>
           <el-button
             type="primary"
             @click="onProfileSubmit"
             :loading="isLoading"
             :disabled="!canSubmit"
           >
-            Save
+            <template v-if="isLoading">
+              <span class="hidden sm:inline">Saving Changes...</span>
+              <span class="sm:hidden">Saving...</span>
+            </template>
+            <template v-else>
+              <span class="hidden sm:inline">Save Changes</span>
+              <span class="sm:hidden">Save</span>
+            </template>
           </el-button>
         </div>
       </el-form>
@@ -289,16 +299,26 @@
 
                 <!-- Form Actions -->
                 <div
-                  class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-600"
+                  class="flex justify-center space-x-2 pt-4 border-t border-gray-200 dark:border-gray-600"
                 >
-                  <el-button @click="onPasswordReset">Reset</el-button>
+                  <el-button @click="onPasswordReset">
+                    <span class="hidden sm:inline">Reset Password</span>
+                    <span class="sm:hidden">Reset</span>
+                  </el-button>
                   <el-button
                     type="primary"
                     @click="onPasswordSubmit"
                     :loading="isPasswordLoading"
                     :disabled="!isPasswordFormValid"
                   >
-                    Update Password
+                    <template v-if="isPasswordLoading">
+                      <span class="hidden sm:inline">Updating Password...</span>
+                      <span class="sm:hidden">Updating...</span>
+                    </template>
+                    <template v-else>
+                      <span class="hidden sm:inline">Update Password</span>
+                      <span class="sm:hidden">Update</span>
+                    </template>
                   </el-button>
                 </div>
               </div>
@@ -383,7 +403,7 @@
 
                 <!-- Form Actions -->
                 <div
-                  class="flex justify-between space-x-2 pt-4 border-t border-gray-200 dark:border-gray-600"
+                  class="flex justify-center space-x-2 pt-4 border-t border-gray-200 dark:border-gray-600"
                 >
                   <el-button @click="onRolesReset">
                     <span class="hidden sm:inline">Reset Changes</span>
