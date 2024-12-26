@@ -39,7 +39,11 @@
         mode="out-in"
       >
         <div :key="activeTab" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          <component :is="currentComponent" v-if="currentComponent" v-bind="activeTabData?.props || {}" />
+          <component
+            :is="currentComponent"
+            v-if="currentComponent"
+            v-bind="activeTabData?.props || {}"
+          />
           <div v-else-if="activeTab === 'dashboard'" class="space-y-4">
             <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">
               Welcome to Dashboard
@@ -59,6 +63,18 @@ import { useTabStore } from '@/stores/tabStore'
 import type { TabPaneClick } from '@/types/TabPaneClick'
 import { markRaw } from 'vue'
 
+// Define interface for tab data
+interface TabData {
+  id: string
+  title: string
+  path: string
+  component: string
+  icon?: string
+  closeable?: boolean
+  isDefault?: boolean
+  props?: Record<string, unknown>
+}
+
 const currentComponent = ref<Component | null>(null)
 
 // Define the components map with lazy loading
@@ -70,7 +86,7 @@ const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'settings/user/index': () => import('@/views/settings/user/indexView.vue'),
   'settings/role/index': () => import('@/views/settings/role/indexView.vue'),
   'settings/menu/index': () => import('@/views/settings/menu/indexView.vue'),
-  profile: () => import('@/views/ProfileView.vue'),
+  'profile': () => import('@/views/ProfileView.vue'),
   'ProfileView': () => import('@/views/ProfileView.vue'),
   'userProfile': () => import('@/views/ProfileView.vue'),
   // settings: () => import('@/views/SettingsView.vue'),  // TODO: Uncomment when SettingsView is implemented
@@ -78,9 +94,10 @@ const componentMap: Record<string, () => Promise<{ default: Component }>> = {
 
 const tabStore = useTabStore()
 
-const activeTabData = computed(() =>
-  tabStore.tabs.find((tab) => tab.id === activeTab.value)
-)
+const activeTabData = computed(() => {
+  const tab = tabStore.tabs.find((tab) => tab.id === activeTab.value)
+  return tab as TabData | undefined
+})
 
 // Watch for tab changes and save to sessionStorage
 watch(
