@@ -1,5 +1,5 @@
 <template>
-  <el-container style="height: 100vh; width: 100vw;">
+  <el-container class="h-full w-full">
     <el-header class="p-0 m-0">
       <!-- Header -->
       <HeaderComponent />
