@@ -12,6 +12,7 @@
             <el-icon><UserFilled /></el-icon>
           </el-avatar>
           <el-upload
+            v-if="canEdit"
             action="#"
             :auto-upload="false"
             :show-file-list="false"
@@ -62,7 +63,7 @@
               </el-form-item>
 
               <el-form-item label="Email" prop="email" class="mb-4">
-                <el-input v-model="profileForm.email" class="w-full">
+                <el-input v-model="profileForm.email" :disabled="!canEdit" class="w-full">
                   <template #prefix>
                     <el-icon><Message /></el-icon>
                   </template>
@@ -70,7 +71,12 @@
               </el-form-item>
 
               <el-form-item label="Phone" prop="phone" class="mb-4">
-                <el-input v-model="profileForm.phone" maxlength="11" class="w-full">
+                <el-input
+                  v-model="profileForm.phone"
+                  :disabled="!canEdit"
+                  maxlength="11"
+                  class="w-full"
+                >
                   <template #prefix>
                     <el-icon><Phone /></el-icon>
                   </template>
@@ -141,6 +147,7 @@
             <el-form-item label="Comment" prop="comment">
               <el-input
                 v-model="profileForm.comment"
+                :disabled="!canEdit"
                 type="textarea"
                 :rows="4"
                 maxlength="500"
@@ -178,7 +185,7 @@
       </el-form>
 
       <!-- Password Section -->
-      <div class="mt-8">
+      <div v-if="canEdit" class="mt-8">
         <el-collapse>
           <el-collapse-item>
             <template #title>
@@ -328,7 +335,7 @@
       </div>
 
       <!-- Role Management Section -->
-      <div class="mt-8">
+      <div v-if="canEdit" class="mt-8">
         <el-collapse>
           <el-collapse-item>
             <template #title>
@@ -447,6 +454,7 @@ import {
   Phone,
 } from '@element-plus/icons-vue'
 import type { Role } from '@/types/Role'
+import { useRoute } from 'vue-router'
 
 const controller = new AbortController()
 
@@ -484,6 +492,18 @@ const profileFormRef = ref<FormInstance>()
 const passwordFormRef = ref<FormInstance>()
 const isLoading = ref(false)
 const isPasswordLoading = ref(false)
+
+// Handle both self and admin role's editing
+const route = useRoute()
+const userId = computed(() => route.params.id)
+const isAdminEditing = computed(
+  () => userId.value && userId.value !== authStore.user?.id.toString(),
+)
+// Permission check
+// Only admin can edit other users' profiles; users can edit their own profile
+const canEdit = computed(
+  () => !isAdminEditing.value || authStore.user?.roles?.some((r) => r.code === 'admin'),
+)
 
 // For role management
 const availableRoles = ref<Role[]>([])
@@ -539,14 +559,14 @@ const onRolesSave = async () => {
   isRolesSaving.value = true
   try {
     const response = await apiClient.post('/user/api/profile/roles/', {
-      roles: selectedRoles.value
+      roles: selectedRoles.value,
     })
 
     if (response.data.code === 200) {
       ElNotification({
         title: 'Success',
         message: 'Roles updated successfully',
-        type: 'success'
+        type: 'success',
       })
 
       // Update current user roles in store
@@ -554,10 +574,14 @@ const onRolesSave = async () => {
         const currentToken = authStore.accessToken || ''
         const currentRememberMe = authStore.rememberMe || false
 
-        authStore.setUser({
-          ...currentUser.value,
-          roles: response.data.data.roles
-        }, currentToken, currentRememberMe)
+        authStore.setUser(
+          {
+            ...currentUser.value,
+            roles: response.data.data.roles,
+          },
+          currentToken,
+          currentRememberMe,
+        )
 
         // Update initial roles
         initialRoles.value = [...selectedRoles.value]
@@ -568,7 +592,7 @@ const onRolesSave = async () => {
       ElNotification({
         title: 'Error',
         message: `Failed to update roles: ${error.response?.data?.message || error.message}`,
-        type: 'error'
+        type: 'error',
       })
     }
   } finally {
@@ -752,9 +776,12 @@ const fetchAvatar = async () => {
 // Fetch full user profile on component mount
 const fetchUserProfile = async () => {
   try {
-    const response = await apiClient.get('/user/api/user-info/', {
-      signal: controller.signal,
-    })
+    const response = await apiClient.get(
+      isAdminEditing.value ? `/user/api/users/${userId.value}/` : '/user/api/user-info/',
+      {
+        signal: controller.signal,
+      },
+    )
     if (response.data.code === 200) {
       // Update store with full user data while keeping existing token and rememberMe
       authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)

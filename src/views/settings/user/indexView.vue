@@ -281,6 +281,8 @@ import axios from 'axios'
 import { Search, Plus, Edit, Delete, UserFilled, Loading } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/authStore'
 import type { Role } from '@/types/Role'
+import { useTabStore } from '@/stores/tabStore'
+import { useRouter } from 'vue-router'
 
 // Search
 interface SearchParams {
@@ -296,6 +298,10 @@ interface SearchParams {
 const searchQuery = ref('')
 const searchTimeout = ref<number | null>(null)
 const searchLoading = ref(false)
+
+// Handle user edit
+const router = useRouter()
+const tabStore = useTabStore()
 
 // State
 const loading = ref(false)
@@ -343,9 +349,17 @@ const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
 }
 
 // Methods for handling row actions
-const handleEdit = (row: User) => {
-  console.log('Edit user:', row)
-  // Implement edit logic
+const handleEdit = (user: User) => {
+  const tab = {
+    id: `profile-${user.id}`,
+    title: `${user.username}'s Profile`,
+    path: `/user/profile/${user.id}`,
+    component: 'userProfile',
+    closeable: true,
+  }
+  tabStore.addTab(tab)
+  tabStore.setActiveTab(tab.id)
+  router.push(`/user/profile/${user.id}`)
 }
 
 const handleDelete = (row: User) => {

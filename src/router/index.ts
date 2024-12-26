@@ -27,6 +27,13 @@ const router = createRouter({
       component: SignUp,
       meta: { requiresAuth: false },
     },
+    {
+      path: '/user/profile/:id',
+      name: 'UserProfile',
+      component: () => import('@/views/ProfileView.vue'),
+      meta: { requiresAuth: true },
+      props: true
+    },
     // Catch-all route
     {
       path: '/:pathMatch(.*)*',
