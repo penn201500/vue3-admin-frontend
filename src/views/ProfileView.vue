@@ -455,7 +455,6 @@ import {
   Warning,
 } from '@element-plus/icons-vue'
 import type { Role } from '@/types/Role'
-import { useRoute } from 'vue-router'
 
 const controller = new AbortController()
 
@@ -495,10 +494,8 @@ const isLoading = ref(false)
 const isPasswordLoading = ref(false)
 
 // Handle both self and admin role's editing
-const route = useRoute()
-const userId = computed(() => route.params.id)
-const isAdminEditing = computed(
-  () => userId.value && userId.value !== authStore.user?.id.toString(),
+const isAdminEditing = computed(() =>
+  Boolean(props.userId && props.userId !== authStore.user?.id.toString()),
 )
 // Permission check
 // Only admin can edit other users' profiles; users can edit their own profile
@@ -509,12 +506,12 @@ const canEdit = computed(
 const updateSelectedRoles = (roleId: number, checked: boolean) => {
   if (checked) {
     if (!selectedRoles.value.includes(roleId)) {
-      selectedRoles.value.push(roleId);
+      selectedRoles.value.push(roleId)
     }
   } else {
-    selectedRoles.value = selectedRoles.value.filter(id => id !== roleId);
+    selectedRoles.value = selectedRoles.value.filter((id) => id !== roleId)
   }
-};
+}
 
 // For role management
 const availableRoles = ref<Role[]>([])
@@ -784,18 +781,25 @@ const fetchAvatar = async () => {
   }
 }
 
+const props = defineProps<{
+  userId?: string | number
+}>()
+
 // Fetch full user profile on component mount
 const fetchUserProfile = async () => {
   try {
-    const response = await apiClient.get(
-      isAdminEditing.value ? `/user/api/users/${userId.value}/` : '/user/api/user-info/',
-      {
-        signal: controller.signal,
-      },
-    )
+    // Determine if we're editing another user or viewing own profile
+    const isEditingOtherUser = props.userId && props.userId !== authStore.user?.id.toString()
+    const url = isEditingOtherUser ? `/user/api/users/${props.userId}/` : '/user/api/user-info/'
+    const response = await apiClient.get(url, {
+      signal: controller.signal,
+    })
     if (response.data.code === 200) {
       // Update store with full user data while keeping existing token and rememberMe
-      authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
+      // For other users' profiles, don't update the auth store
+      if (!isEditingOtherUser) {
+        authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
+      }
 
       // Update local form data
       profileForm.username = response.data.data.username
@@ -924,7 +928,10 @@ const onProfileSubmit = async (): Promise<void> => {
     if (valid) {
       isLoading.value = true
       try {
-        const response = await apiClient.patch('/user/api/profile/update/', {
+        const url = isAdminEditing.value
+          ? `/user/api/users/${props.userId}/update/`
+          : '/user/api/profile/update/'
+        const response = await apiClient.patch(url, {
           email: profileForm.email,
           phone: profileForm.phone,
           comment: profileForm.comment,
@@ -937,8 +944,8 @@ const onProfileSubmit = async (): Promise<void> => {
             type: 'success',
           })
 
-          // Update the store with new user data
-          if (currentUser.value) {
+          // Only update auth store if editing own profile
+          if (!isAdminEditing.value && currentUser.value) {
             const currentToken = authStore.accessToken || ''
             const currentRememberMe = authStore.rememberMe || false
 

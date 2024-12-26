@@ -348,19 +348,20 @@ const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
 
 // Methods for handling row actions
 const handleEdit = (user: User) => {
+  const tabId = `profile-${user.id}`
   const tab = {
-    id: `profile-${user.id}`,
+    id: tabId,
     title: `${user.username}'s Profile`,
     path: `/user/profile/${user.id}`,
-    component: 'userProfile',
+    component: 'ProfileView',
     closeable: true,
-    props: { userId: user.id}
+    props: { userId: user.id },
   }
-  const existingTab = tabStore.tabs.find(t => t.id === tab.id)
+  const existingTab = tabStore.tabs.find((t) => t.id === tab.id)
   if (!existingTab) {
     tabStore.addTab(tab)
   }
-  tabStore.setActiveTab(tab.id)
+  tabStore.setActiveTab(tabId)
 }
 
 const handleDelete = (row: User) => {

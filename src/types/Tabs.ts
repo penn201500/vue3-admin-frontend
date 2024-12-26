@@ -18,4 +18,5 @@ export interface TabItem {
   icon?: string | null;
   closeable?: boolean;
   isDefault?: boolean;
+  props?: Record<string, unknown>;
 }
