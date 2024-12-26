@@ -425,7 +425,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { ElNotification } from 'element-plus'
 import type { FormInstance, UploadFile } from 'element-plus'
@@ -520,40 +520,47 @@ const fetchAvailableRoles = async () => {
     }
   }
 }
+
+const showRoleWarning = ref(false)
+watch(selectedRoles, (newValue) => {
+  showRoleWarning.value = newValue.length === 0
+})
+const isRolesSaving = ref(false)
+const onRolesReset = () => {
+  selectedRoles.value = [...initialRoles.value]
+  showRoleWarning.value = false
+}
 const onRolesSave = async () => {
   if (selectedRoles.value.length === 0) {
-    ElNotification({
-      title: 'Warning',
-      message: 'Please select at least one role',
-      type: 'warning',
-    })
+    showRoleWarning.value = true
     return
   }
 
+  isRolesSaving.value = true
   try {
     const response = await apiClient.post('/user/api/profile/roles/', {
-      roles: selectedRoles.value,
+      roles: selectedRoles.value
     })
 
     if (response.data.code === 200) {
       ElNotification({
         title: 'Success',
         message: 'Roles updated successfully',
-        type: 'success',
+        type: 'success'
       })
 
-      initialRoles.value = [...selectedRoles.value]
-
-      // Update user in store
+      // Update current user roles in store
       if (currentUser.value) {
-        authStore.setUser(
-          {
-            ...currentUser.value,
-            roles: response.data.data.roles,
-          },
-          authStore.accessToken as string,
-          authStore.rememberMe,
-        )
+        const currentToken = authStore.accessToken || ''
+        const currentRememberMe = authStore.rememberMe || false
+
+        authStore.setUser({
+          ...currentUser.value,
+          roles: response.data.data.roles
+        }, currentToken, currentRememberMe)
+
+        // Update initial roles
+        initialRoles.value = [...selectedRoles.value]
       }
     }
   } catch (error) {
@@ -561,17 +568,14 @@ const onRolesSave = async () => {
       ElNotification({
         title: 'Error',
         message: `Failed to update roles: ${error.response?.data?.message || error.message}`,
-        type: 'error',
+        type: 'error'
       })
     }
+  } finally {
+    isRolesSaving.value = false
+    showRoleWarning.value = false
   }
 }
-const showRoleWarning = computed(() => {
-  return selectedRoles.value.length === 0
-})
-
-const onRolesReset = () => {}
-const isRolesSaving = false
 
 // Store
 const authStore = useAuthStore()
@@ -784,8 +788,8 @@ const fetchUserProfile = async () => {
 }
 
 onMounted(async () => {
-  await fetchAvailableRoles()
   await fetchUserProfile()
+  await fetchAvailableRoles()
   await fetchAvatar()
 })
 
