@@ -369,8 +369,8 @@
                       ]"
                     >
                       <el-checkbox
-                        v-model="selectedRoles"
-                        :label="role.id"
+                        :model-value="selectedRoles.includes(role.id)"
+                        @update:model-value="(checked) => updateSelectedRoles(role.id, checked)"
                         :disabled="role.code === 'admin' && !canManageAdminRole"
                       >
                         <span
@@ -452,7 +452,7 @@ import {
   User,
   Message,
   Phone,
-  Warning
+  Warning,
 } from '@element-plus/icons-vue'
 import type { Role } from '@/types/Role'
 import { useRoute } from 'vue-router'
@@ -505,6 +505,16 @@ const isAdminEditing = computed(
 const canEdit = computed(
   () => !isAdminEditing.value || authStore.user?.roles?.some((r) => r.code === 'admin'),
 )
+
+const updateSelectedRoles = (roleId: number, checked: boolean) => {
+  if (checked) {
+    if (!selectedRoles.value.includes(roleId)) {
+      selectedRoles.value.push(roleId);
+    }
+  } else {
+    selectedRoles.value = selectedRoles.value.filter(id => id !== roleId);
+  }
+};
 
 // For role management
 const availableRoles = ref<Role[]>([])
