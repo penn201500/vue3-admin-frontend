@@ -57,7 +57,7 @@
               <el-form-item label="Username" prop="username" class="mb-4">
                 <el-input v-model="profileForm.username" disabled class="w-full">
                   <template #prefix>
-                    <el-icon><User /></el-icon>
+                    <el-icon><UserIcon /></el-icon>
                   </template>
                 </el-input>
               </el-form-item>
@@ -102,7 +102,7 @@
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">Account Created</p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ getFormattedDateTime(currentUser?.create_time) }}
+                    {{ getFormattedDateTime('create_time') }}
                   </p>
                 </div>
               </div>
@@ -111,12 +111,12 @@
                 <div
                   class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center"
                 >
-                  <el-icon class="text-green-500"><User /></el-icon>
+                  <el-icon class="text-green-500"><UserIcon /></el-icon>
                 </div>
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">Last Login</p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ getFormattedDateTime(currentUser?.last_login) }}
+                    {{ getFormattedDateTime('last_login') }}
                   </p>
                 </div>
               </div>
@@ -130,7 +130,7 @@
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">Last Updated</p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ getFormattedDateTime(currentUser?.update_time) }}
+                    {{ getFormattedDateTime('update_time') }}
                   </p>
                 </div>
               </div>
@@ -185,7 +185,7 @@
       </el-form>
 
       <!-- Password Section -->
-      <div v-if="canEdit" class="mt-8">
+      <div v-if="showPasswordSection" class="mt-8">
         <el-collapse>
           <el-collapse-item>
             <template #title>
@@ -335,7 +335,7 @@
       </div>
 
       <!-- Role Management Section -->
-      <div v-if="canEdit" class="mt-8">
+      <div v-if="showRolesSection" class="mt-8">
         <el-collapse>
           <el-collapse-item>
             <template #title>
@@ -451,12 +451,13 @@ import {
   Lock,
   Key,
   Edit,
-  User,
+  User as UserIcon,
   Message,
   Phone,
   Warning,
 } from '@element-plus/icons-vue'
 import type { Role } from '@/types/Role'
+import type { User } from '@/types/User'
 
 const controller = new AbortController()
 
@@ -495,15 +496,43 @@ const passwordFormRef = ref<FormInstance>()
 const isLoading = ref(false)
 const isPasswordLoading = ref(false)
 
+// Add new state for profile data
+const profileData = ref<User | null>(null)
+const profileRoles = ref<Role[]>([])
+
+const props = defineProps<{
+  userId?: string | number
+}>()
+
 // Handle both self and admin role's editing
 const isAdminEditing = computed(() =>
   Boolean(props.userId && props.userId !== authStore.user?.id.toString()),
 )
 // Permission check
 // Only admin can edit other users' profiles; users can edit their own profile
-const canEdit = computed(
-  () => !isAdminEditing.value || authStore.user?.roles?.some((r) => r.code === 'admin'),
-)
+const canEdit = computed(() => {
+  if (!authStore.user?.roles) return false
+  const isAdmin = authStore.user?.roles?.some((r) => r.code === 'admin')
+  // Admin can edit anyone, users can only edit themselves
+  return !isAdminEditing.value || isAdmin
+})
+
+// Add loading state for auth store
+const isAuthLoaded = computed(() => Boolean(authStore.user?.roles))
+
+// Update sections visibility logic
+const showPasswordSection = computed(() => {
+  // Wait for the roles to be loaded
+  if (!authStore.user?.roles) return false
+  const isAdmin = authStore.user?.roles?.some((r) => r.code === 'admin')
+  // Only show for self or admin
+  return !isAdminEditing.value || isAdmin
+})
+const showRolesSection = computed(() => {
+  if (!authStore.user?.roles) return false
+  // Only admin can see and edit roles
+  return authStore.user?.roles?.some((r) => r.code === 'admin')
+})
 
 const updateSelectedRoles = (roleId: number, checked: boolean) => {
   if (checked) {
@@ -534,9 +563,9 @@ const fetchAvailableRoles = async () => {
     const response = await apiClient.get('/role/api/roles/')
     if (response.data.code === 200) {
       availableRoles.value = response.data.data
-      // Initialize selected roles
-      if (currentUser.value?.roles) {
-        selectedRoles.value = currentUser.value.roles.map((role) => role.id)
+      // Initialize selected roles from profileData
+      if (profileData.value?.roles) {
+        selectedRoles.value = profileData.value.roles.map((role) => role.id)
         initialRoles.value = [...selectedRoles.value]
       }
     }
@@ -568,7 +597,10 @@ const onRolesSave = async () => {
 
   isRolesSaving.value = true
   try {
-    const response = await apiClient.post('/user/api/profile/roles/', {
+    const url = isAdminEditing.value
+      ? `/user/api/users/${props.userId}/roles/`
+      : '/user/api/profile/roles/'
+    const response = await apiClient.post(url, {
       roles: selectedRoles.value,
     })
 
@@ -579,8 +611,12 @@ const onRolesSave = async () => {
         type: 'success',
       })
 
+      // Update profile roles
+      profileRoles.value = response.data.data.roles
+
       // Update current user roles in store
-      if (currentUser.value) {
+      // Only update current user roles in store if editing own profile
+      if (!isAdminEditing.value && currentUser.value) {
         const currentToken = authStore.accessToken || ''
         const currentRememberMe = authStore.rememberMe || false
 
@@ -619,9 +655,9 @@ const currentUser = computed(() => authStore.user)
 
 // Original user data from the store
 const originalForm = ref({
-  email: currentUser.value?.email ?? null,
-  phone: currentUser.value?.phone ?? null,
-  comment: currentUser.value?.comment ?? null,
+  email: null,
+  phone: null,
+  comment: null,
 })
 
 // Compute if form is dirty (has changes) and valid
@@ -735,7 +771,8 @@ const passwordForm = reactive<PasswordForm>({
 
 // Status computeds
 const currentStatusType = computed((): 'success' | 'danger' | 'info' => {
-  switch (currentUser.value?.status) {
+  const status = isAdminEditing.value ? profileData.value?.status : currentUser.value?.status
+  switch (status) {
     case 1:
       return 'success'
     case 0:
@@ -746,7 +783,8 @@ const currentStatusType = computed((): 'success' | 'danger' | 'info' => {
 })
 
 const currentStatusText = computed((): string => {
-  switch (currentUser.value?.status) {
+  const status = isAdminEditing.value ? profileData.value?.status : currentUser.value?.status
+  switch (status) {
     case 1:
       return 'Active'
     case 0:
@@ -762,6 +800,7 @@ const avatarUrl = ref<string>('')
 const fetchAvatar = async () => {
   try {
     const response = await apiClient.get('/user/api/profile/get-avatar/', {
+      params: { user_id: isAdminEditing.value ? props.userId : undefined },
       signal: controller.signal,
     })
     if (response.data.code === 200) {
@@ -783,23 +822,24 @@ const fetchAvatar = async () => {
   }
 }
 
-const props = defineProps<{
-  userId?: string | number
-}>()
-
 // Fetch full user profile on component mount
 const fetchUserProfile = async () => {
   try {
     // Determine if we're editing another user or viewing own profile
-    const isEditingOtherUser = props.userId && props.userId !== authStore.user?.id.toString()
-    const url = isEditingOtherUser ? `/user/api/users/${props.userId}/` : '/user/api/user-info/'
+    const url = isAdminEditing.value ? `/user/api/users/${props.userId}/` : '/user/api/user-info/'
     const response = await apiClient.get(url, {
       signal: controller.signal,
     })
     if (response.data.code === 200) {
       // Update store with full user data while keeping existing token and rememberMe
-      // For other users' profiles, don't update the auth store
-      if (!isEditingOtherUser) {
+      // Store profile data separately from auth store
+      profileData.value = response.data.data
+
+      // Store roles separately
+      profileRoles.value = response.data.data.roles || []
+
+      // Only update auth store if viewing own profile
+      if (!isAdminEditing.value) {
         authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
       }
 
@@ -814,6 +854,15 @@ const fetchUserProfile = async () => {
         email: response.data.data.email,
         phone: response.data.data.phone,
         comment: response.data.data.comment,
+      }
+
+      // Initialize role selection
+      selectedRoles.value = response.data.data.roles?.map((role: { id: number }) => role.id) || []
+      initialRoles.value = [...selectedRoles.value]
+
+      // Only update auth store if viewing own profile
+      if (!isAdminEditing.value) {
+        authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
       }
     }
   } catch (error) {
@@ -832,6 +881,19 @@ const fetchUserProfile = async () => {
 }
 
 onMounted(async () => {
+  // If auth isn't loaded yet, wait for it
+  if (!isAuthLoaded.value) {
+    try {
+      // Fetch current user info to ensure roles are loaded
+      const response = await apiClient.get('/user/api/user-info/')
+      if (response.data.code === 200) {
+        authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
+      }
+    } catch (error) {
+      console.error('Failed to load user info:', error)
+    }
+  }
+
   await fetchUserProfile()
   await fetchAvailableRoles()
   await fetchAvatar()
@@ -839,12 +901,19 @@ onMounted(async () => {
 
 onUnmounted(() => {
   controller.abort() // Cancel any pending requests
+  // Reset all state
+  profileData.value = null
+  profileRoles.value = []
+  selectedRoles.value = []
+  initialRoles.value = []
+  avatarUrl.value = ''
 })
 
 // Utility functions
-const getFormattedDateTime = (dateString: string | null | undefined): string => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleString()
+const getFormattedDateTime = (field: 'create_time' | 'last_login' | 'update_time'): string => {
+  const date = profileData.value?.[field]
+  if (!date) return 'N/A'
+  return new Date(date).toLocaleString()
 }
 
 // Form actions
