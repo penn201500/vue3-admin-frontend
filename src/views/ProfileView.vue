@@ -370,7 +370,9 @@
                     >
                       <el-checkbox
                         :model-value="selectedRoles.includes(role.id)"
-                        @update:model-value="(checked) => updateSelectedRoles(role.id, checked)"
+                        @update:model-value="
+                          (checked: boolean) => updateSelectedRoles(role.id, checked)
+                        "
                         :disabled="role.code === 'admin' && !canManageAdminRole"
                       >
                         <span
