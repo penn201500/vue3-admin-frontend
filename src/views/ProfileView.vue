@@ -154,7 +154,7 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="flex justify-end space-x-4 mt-6">
+        <div class="flex justify-center space-x-4 mt-6">
           <el-button @click="onProfileReset" :disabled="!isFormDirty"> Reset </el-button>
           <el-button
             type="primary"
@@ -162,7 +162,7 @@
             :loading="isLoading"
             :disabled="!canSubmit"
           >
-            Save Changes
+            Save
           </el-button>
         </div>
       </el-form>
@@ -303,6 +303,110 @@
                 </div>
               </div>
             </el-form>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
+
+      <!-- Role Management Section -->
+      <div class="mt-8">
+        <el-collapse>
+          <el-collapse-item>
+            <template #title>
+              <div class="flex items-center text-gray-900 dark:text-white">
+                <el-icon class="mr-2"><UserFilled /></el-icon>
+                <span class="text-xl font-semibold">Manage Roles</span>
+              </div>
+            </template>
+
+            <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+              <!-- Role Selection Area -->
+              <div class="space-y-4">
+                <div class="mb-4">
+                  <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Available Roles
+                  </h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Select at least one role. Your current roles are highlighted.
+                  </p>
+                </div>
+
+                <!-- Role Checkboxes -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <template v-for="role in availableRoles" :key="role.id">
+                    <div
+                      class="flex items-center p-3 rounded-lg transition-colors duration-150"
+                      :class="[
+                        isCurrentRole(role.id)
+                          ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                          : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600',
+                        { 'opacity-50': role.code === 'admin' && !canManageAdminRole },
+                      ]"
+                    >
+                      <el-checkbox
+                        v-model="selectedRoles"
+                        :label="role.id"
+                        :disabled="role.code === 'admin' && !canManageAdminRole"
+                        @change="handleRoleChange"
+                      >
+                        <div class="ml-2">
+                          <span
+                            class="font-medium"
+                            :class="[
+                              role.code === 'admin'
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-gray-900 dark:text-gray-100',
+                            ]"
+                          >
+                            {{ role.name }}
+                          </span>
+                          <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ getRoleDescription(role.code) }}
+                          </p>
+                        </div>
+                      </el-checkbox>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- Warning Message -->
+                <div
+                  v-if="showRoleWarning"
+                  class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg"
+                >
+                  <div class="flex">
+                    <el-icon class="text-yellow-400 mr-2"><Warning /></el-icon>
+                    <div class="text-sm text-yellow-700 dark:text-yellow-200">
+                      Please select at least one role to continue.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div
+                  class="flex justify-between space-x-2 pt-4 border-t border-gray-200 dark:border-gray-600"
+                >
+                  <el-button @click="onRolesReset">
+                    <span class="hidden sm:inline">Reset Changes</span>
+                    <span class="sm:hidden">Reset</span>
+                  </el-button>
+                  <el-button
+                    type="primary"
+                    @click="onRolesSave"
+                    :loading="isRolesSaving"
+                    :disabled="!canSaveRoles"
+                  >
+                    <template v-if="isRolesSaving">
+                      <span class="hidden sm:inline">Saving Changes...</span>
+                      <span class="sm:hidden">Saving...</span>
+                    </template>
+                    <template v-else>
+                      <span class="hidden sm:inline">Save Changes</span>
+                      <span class="sm:hidden">Save</span>
+                    </template>
+                  </el-button>
+                </div>
+              </div>
+            </div>
           </el-collapse-item>
         </el-collapse>
       </div>
