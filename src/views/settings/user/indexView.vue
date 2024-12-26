@@ -356,10 +356,13 @@ const handleEdit = (user: User) => {
     path: `/user/profile/${user.id}`,
     component: 'userProfile',
     closeable: true,
+    props: { userId: user.id}
   }
-  tabStore.addTab(tab)
+  const existingTab = tabStore.tabs.find(t => t.id === tab.id)
+  if (!existingTab) {
+    tabStore.addTab(tab)
+  }
   tabStore.setActiveTab(tab.id)
-  router.push(`/user/profile/${user.id}`)
 }
 
 const handleDelete = (row: User) => {

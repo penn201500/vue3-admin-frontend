@@ -39,7 +39,7 @@
         mode="out-in"
       >
         <div :key="activeTab" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          <component :is="currentComponent" v-if="currentComponent" />
+          <component :is="currentComponent" v-if="currentComponent" v-bind="activeTabData?.props || {}" />
           <div v-else-if="activeTab === 'dashboard'" class="space-y-4">
             <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">
               Welcome to Dashboard
@@ -71,10 +71,16 @@ const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'settings/role/index': () => import('@/views/settings/role/indexView.vue'),
   'settings/menu/index': () => import('@/views/settings/menu/indexView.vue'),
   profile: () => import('@/views/ProfileView.vue'),
+  'ProfileView': () => import('@/views/ProfileView.vue'),
+  'userProfile': () => import('@/views/ProfileView.vue'),
   // settings: () => import('@/views/SettingsView.vue'),  // TODO: Uncomment when SettingsView is implemented
 }
 
 const tabStore = useTabStore()
+
+const activeTabData = computed(() =>
+  tabStore.tabs.find((tab) => tab.id === activeTab.value)
+)
 
 // Watch for tab changes and save to sessionStorage
 watch(

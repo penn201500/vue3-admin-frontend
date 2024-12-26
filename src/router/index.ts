@@ -32,7 +32,7 @@ const router = createRouter({
       name: 'UserProfile',
       component: () => import('@/views/ProfileView.vue'),
       meta: { requiresAuth: true },
-      props: true
+      props: true,
     },
     // Catch-all route
     {
