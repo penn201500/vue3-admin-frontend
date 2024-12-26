@@ -282,7 +282,6 @@ import { Search, Plus, Edit, Delete, UserFilled, Loading } from '@element-plus/i
 import { useAuthStore } from '@/stores/authStore'
 import type { Role } from '@/types/Role'
 import { useTabStore } from '@/stores/tabStore'
-import { useRouter } from 'vue-router'
 
 // Search
 interface SearchParams {
@@ -300,7 +299,6 @@ const searchTimeout = ref<number | null>(null)
 const searchLoading = ref(false)
 
 // Handle user edit
-const router = useRouter()
 const tabStore = useTabStore()
 
 // State
