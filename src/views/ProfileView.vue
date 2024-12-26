@@ -302,7 +302,7 @@
                   class="flex justify-center space-x-2 pt-4 border-t border-gray-200 dark:border-gray-600"
                 >
                   <el-button @click="onPasswordReset">
-                    <span class="hidden sm:inline">Reset Password</span>
+                    <span class="hidden sm:inline">Reset Changes</span>
                     <span class="sm:hidden">Reset</span>
                   </el-button>
                   <el-button
@@ -354,35 +354,25 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <template v-for="role in availableRoles" :key="role.id">
                     <div
-                      class="flex items-center p-3 rounded-lg transition-colors duration-150"
+                      class="bg-white dark:bg-gray-800 rounded-lg p-4"
                       :class="[
-                        isCurrentRole(role.id)
-                          ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                          : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600',
-                        { 'opacity-50': role.code === 'admin' && !canManageAdminRole },
+                        selectedRoles.includes(role.id)
+                          ? 'ring-2 ring-blue-500 dark:ring-blue-400'
+                          : 'ring-1 ring-gray-200 dark:ring-gray-700',
                       ]"
                     >
                       <el-checkbox
                         v-model="selectedRoles"
                         :label="role.id"
                         :disabled="role.code === 'admin' && !canManageAdminRole"
-                        @change="handleRoleChange"
                       >
-                        <div class="ml-2">
-                          <span
-                            class="font-medium"
-                            :class="[
-                              role.code === 'admin'
-                                ? 'text-red-600 dark:text-red-400'
-                                : 'text-gray-900 dark:text-gray-100',
-                            ]"
-                          >
-                            {{ role.name }}
-                          </span>
-                          <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {{ getRoleDescription(role.code) }}
-                          </p>
-                        </div>
+                        <span
+                          class="ml-2 font-medium"
+                          :class="{
+                            'text-red-600 dark:text-red-400': role.code === 'admin',
+                          }"
+                          >{{ role.name }}</span
+                        >
                       </el-checkbox>
                     </div>
                   </template>
@@ -456,6 +446,7 @@ import {
   Message,
   Phone,
 } from '@element-plus/icons-vue'
+import type { Role } from '@/types/Role'
 
 const controller = new AbortController()
 
@@ -493,6 +484,94 @@ const profileFormRef = ref<FormInstance>()
 const passwordFormRef = ref<FormInstance>()
 const isLoading = ref(false)
 const isPasswordLoading = ref(false)
+
+// For role management
+const availableRoles = ref<Role[]>([])
+const selectedRoles = ref<number[]>([])
+const initialRoles = ref<number[]>([])
+const canManageAdminRole = computed(() => {
+  return currentUser.value?.roles?.some((role) => role.code === 'admin') ?? false
+})
+const hasRolesChanged = computed(() => {
+  if (selectedRoles.value.length !== initialRoles.value.length) return true
+  return selectedRoles.value.some((roleId) => !initialRoles.value.includes(roleId))
+})
+const canSaveRoles = computed(() => {
+  return hasRolesChanged.value && selectedRoles.value.length > 0
+})
+const fetchAvailableRoles = async () => {
+  try {
+    const response = await apiClient.get('/role/api/roles/')
+    if (response.data.code === 200) {
+      availableRoles.value = response.data.data
+      // Initialize selected roles
+      if (currentUser.value?.roles) {
+        selectedRoles.value = currentUser.value.roles.map((role) => role.id)
+        initialRoles.value = [...selectedRoles.value]
+      }
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      ElNotification({
+        title: 'Error',
+        message: `Failed to fetch roles: ${error.response?.data?.message || error.message}`,
+        type: 'error',
+      })
+    }
+  }
+}
+const onRolesSave = async () => {
+  if (selectedRoles.value.length === 0) {
+    ElNotification({
+      title: 'Warning',
+      message: 'Please select at least one role',
+      type: 'warning',
+    })
+    return
+  }
+
+  try {
+    const response = await apiClient.post('/user/api/profile/roles/', {
+      roles: selectedRoles.value,
+    })
+
+    if (response.data.code === 200) {
+      ElNotification({
+        title: 'Success',
+        message: 'Roles updated successfully',
+        type: 'success',
+      })
+
+      initialRoles.value = [...selectedRoles.value]
+
+      // Update user in store
+      if (currentUser.value) {
+        authStore.setUser(
+          {
+            ...currentUser.value,
+            roles: response.data.data.roles,
+          },
+          authStore.accessToken as string,
+          authStore.rememberMe,
+        )
+      }
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      ElNotification({
+        title: 'Error',
+        message: `Failed to update roles: ${error.response?.data?.message || error.message}`,
+        type: 'error',
+      })
+    }
+  }
+}
+const showRoleWarning = computed(() => {
+  return selectedRoles.value.length === 0
+})
+
+const onRolesReset = () => {}
+const isRolesSaving = false
 
 // Store
 const authStore = useAuthStore()
@@ -704,9 +783,10 @@ const fetchUserProfile = async () => {
   }
 }
 
-onMounted(() => {
-  fetchUserProfile()
-  fetchAvatar()
+onMounted(async () => {
+  await fetchAvailableRoles()
+  await fetchUserProfile()
+  await fetchAvatar()
 })
 
 onUnmounted(() => {
