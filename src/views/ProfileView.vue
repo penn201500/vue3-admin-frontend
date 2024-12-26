@@ -184,7 +184,7 @@
             <template #title>
               <div class="flex items-center text-gray-900 dark:text-white">
                 <el-icon class="mr-2"><Lock /></el-icon>
-                <span class="text-xl font-semibold">Change Password</span>
+                <span class="text-xl font-semibold">Password</span>
               </div>
             </template>
 
@@ -334,7 +334,7 @@
             <template #title>
               <div class="flex items-center text-gray-900 dark:text-white">
                 <el-icon class="mr-2"><UserFilled /></el-icon>
-                <span class="text-xl font-semibold">Manage Roles</span>
+                <span class="text-xl font-semibold">Roles</span>
               </div>
             </template>
 
