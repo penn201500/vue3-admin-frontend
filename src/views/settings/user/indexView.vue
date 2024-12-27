@@ -274,7 +274,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import type { User } from '@/types/User'
 import apiClient from '@/utils/apiClient'
 import axios from 'axios'
@@ -364,9 +364,63 @@ const handleEdit = (user: User) => {
   tabStore.setActiveTab(tabId)
 }
 
-const handleDelete = (row: User) => {
-  console.log('Delete user:', row)
-  // Implement delete logic
+const handleDelete = async (user: User) => {
+  // Check if user has admin role
+  if (hasAdminRoleUser(user)) {
+    ElNotification({
+      title: 'Error',
+      message: 'Cannot delete user with admin role',
+      type: 'error',
+    })
+    return
+  }
+
+  try {
+    // Show confirmation dialog
+    await ElMessageBox.confirm(
+      'Are you sure you want to delete this user? This action cannot be undone.',
+      'Delete User',
+      {
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+      }
+    )
+
+    // Make API call to delete user
+    const response = await apiClient.delete(`/user/api/users/${user.id}/`)
+
+    if (response.data.code === 200) {
+      // Remove user's profile tab if it exists
+      const profileTabId = `/settings/user/${user.id}`
+      if (tabStore.tabs.some(tab => tab.id === profileTabId)) {
+        tabStore.removeTab(profileTabId)
+      }
+
+      // Remove the user from the local state
+      users.value = users.value.filter(u => u.id !== user.id)
+
+      // Show success message
+      ElNotification({
+        title: 'Success',
+        message: 'User deleted successfully',
+        type: 'success',
+      })
+
+      // Refetch users to update the list and total count
+      fetchUsers()
+    }
+  } catch (error) {
+    if (error !== 'cancel') { // Ignore if user cancelled the operation
+      ElNotification({
+        title: 'Error',
+        message: axios.isAxiosError(error)
+          ? error.response?.data?.message || 'Failed to delete user'
+          : 'Failed to delete user',
+        type: 'error',
+      })
+    }
+  }
 }
 
 const handleAddUser = {}
