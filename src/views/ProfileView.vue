@@ -946,8 +946,17 @@ const onAvatarChange = async (uploadFile: UploadFile): Promise<void> => {
     const formData = new FormData()
     formData.append('avatar', file)
 
+    // Add user_id for admin editing other users
+    if (isAdminEditing.value) {
+      formData.append('user_id', props.userId as string)
+    }
+
+    const url = isAdminEditing.value
+      ? `/user/api/users/${props.userId}/avatar/`
+      : '/user/api/profile/avatar/'
+
     // Use apiClient instead of fetch
-    const response = await apiClient.post('/user/api/profile/avatar/', formData, {
+    const response = await apiClient.post(url, formData, {
       headers: {
         // Override the default Content-Type for file upload
         'Content-Type': 'multipart/form-data',
