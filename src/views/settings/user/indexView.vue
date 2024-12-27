@@ -384,21 +384,36 @@ const handleDelete = async (user: User) => {
         confirmButtonText: 'Delete',
         cancelButtonText: 'Cancel',
         type: 'warning',
-      }
+      },
     )
 
     // Make API call to delete user
     const response = await apiClient.delete(`/user/api/users/${user.id}/`)
 
     if (response.data.code === 200) {
-      // Remove user's profile tab if it exists
-      const profileTabId = `/settings/user/${user.id}`
-      if (tabStore.tabs.some(tab => tab.id === profileTabId)) {
-        tabStore.removeTab(profileTabId)
+      // Remove all profile tabs related to this user
+      const tabsToRemove = [
+        `profile-${user.id}`, // Profile tab
+        `/user/profile/${user.id}`, // Alternative profile tab format
+        `settings-user-${user.id}`, // Settings tab if exists
+      ]
+      tabsToRemove.forEach((tabId) => {
+        const existingTab = tabStore.tabs.find((tab) => tab.id === tabId)
+        if (existingTab) {
+          tabStore.removeTab(tabId)
+        }
+      })
+
+      // If any of the removed tabs was active, switch to the previous tab
+      if (tabsToRemove.includes(tabStore.activeTabId)) {
+        const remainingTabs = tabStore.tabs
+        if (remainingTabs.length > 0) {
+          tabStore.setActiveTab(remainingTabs[remainingTabs.length - 1].id)
+        }
       }
 
       // Remove the user from the local state
-      users.value = users.value.filter(u => u.id !== user.id)
+      users.value = users.value.filter((u) => u.id !== user.id)
 
       // Show success message
       ElNotification({
@@ -411,7 +426,8 @@ const handleDelete = async (user: User) => {
       fetchUsers()
     }
   } catch (error) {
-    if (error !== 'cancel') { // Ignore if user cancelled the operation
+    if (error !== 'cancel') {
+      // Ignore if user cancelled the operation
       ElNotification({
         title: 'Error',
         message: axios.isAxiosError(error)
