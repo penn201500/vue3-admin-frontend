@@ -506,16 +506,17 @@ const props = defineProps<{
 
 // Display super admin role checkbox only if current user is admin
 const filteredAvailableRoles = computed(() => {
-  const hasAdminRole = authStore.user?.roles?.some(r => r.code === 'admin');
-  const editedUserHasAdmin = profileData.value?.roles?.some(r => r.code === 'admin');
+  const hasAdminRole = authStore.user?.roles?.some((r) => r.code === 'admin')
+  const editedUserHasAdmin = profileData.value?.roles?.some((r) => r.code === 'admin')
 
-  // If current user is admin but edited user has no admin role, filter out admin role
+  // If current user is admin but edited user has no admin role, still display all roles
   if (hasAdminRole && !editedUserHasAdmin) {
-    return availableRoles.value.filter(role => role.code !== 'admin');
+    // return availableRoles.value.filter(role => role.code !== 'admin')
+    return availableRoles.value
   }
 
-  return availableRoles.value;
-});
+  return availableRoles.value
+})
 
 // Handle both self and admin role's editing
 const isAdminEditing = computed(() =>
