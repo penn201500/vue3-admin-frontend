@@ -1094,7 +1094,10 @@ const onPasswordSubmit = async (): Promise<void> => {
     if (valid) {
       isPasswordLoading.value = true
       try {
-        const response = await apiClient.post('/user/api/profile/password/', {
+        const url = isAdminEditing.value
+          ? `/user/api/users/${props.userId}/password/`
+          : '/user/api/profile/password/'
+        const response = await apiClient.post(url, {
           current_password: passwordForm.currentPassword,
           new_password: passwordForm.newPassword,
           confirm_password: passwordForm.confirmPassword,
