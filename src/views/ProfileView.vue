@@ -359,7 +359,7 @@
 
                 <!-- Role Checkboxes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <template v-for="role in availableRoles" :key="role.id">
+                  <template v-for="role in filteredAvailableRoles" :key="role.id">
                     <div
                       class="bg-white dark:bg-gray-800 rounded-lg p-4"
                       :class="[
@@ -503,6 +503,19 @@ const profileRoles = ref<Role[]>([])
 const props = defineProps<{
   userId?: string | number
 }>()
+
+// Display super admin role checkbox only if current user is admin
+const filteredAvailableRoles = computed(() => {
+  const hasAdminRole = authStore.user?.roles?.some(r => r.code === 'admin');
+  const editedUserHasAdmin = profileData.value?.roles?.some(r => r.code === 'admin');
+
+  // If current user is admin but edited user has no admin role, filter out admin role
+  if (hasAdminRole && !editedUserHasAdmin) {
+    return availableRoles.value.filter(role => role.code !== 'admin');
+  }
+
+  return availableRoles.value;
+});
 
 // Handle both self and admin role's editing
 const isAdminEditing = computed(() =>
