@@ -1,5 +1,6 @@
 <template>
-  <el-container class="h-full w-full">
+  <!-- Parent wrapper to span full height using Tailwind classes -->
+  <div class="min-h-screen flex flex-col w-full bg-white dark:bg-gray-800">
     <el-header class="p-0 m-0">
       <!-- Header -->
       <HeaderComponent />
@@ -19,7 +20,7 @@
       <!-- Footer -->
       <FooterComponent />
     </el-footer>
-  </el-container>
+  </div>
 </template>
 
 <script setup lang="ts">
