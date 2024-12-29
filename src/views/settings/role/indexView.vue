@@ -299,6 +299,7 @@ import { Search, Plus, Edit, Delete, Loading } from '@element-plus/icons-vue'
 import apiClient from '@/utils/apiClient'
 import type { Role } from '@/types/Role'
 import { useAuthStore } from '@/stores/authStore'
+import axios from 'axios'
 
 const authStore = useAuthStore()
 
@@ -509,8 +510,13 @@ const handleDelete = async (role: Role) => {
       await fetchRoles()
     }
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('Failed to delete role')
+    if (error === 'cancel') {
+      return
+      // ElMessage.error('Failed to delete role')
+      // console.error(error)
+    }
+    if (axios.isAxiosError(error)) {
+      ElMessage.error(error.response?.data?.message || 'Failed to delete role')
       console.error(error)
     }
   }
