@@ -293,7 +293,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { Search, Plus, Edit, Delete, Loading } from '@element-plus/icons-vue'
 import apiClient from '@/utils/apiClient'
@@ -478,12 +478,22 @@ const handleSubmit = async () => {
 
         const response = await apiClient[method](url, roleForm.value)
         if (response.data.code === 200) {
-          ElMessage.success(`Role ${isEditing.value ? 'updated' : 'created'} successfully`)
+          // ElMessage.success(`Role ${isEditing.value ? 'updated' : 'created'} successfully`)
+          ElNotification({
+            title: 'Success',
+            message: `Role ${isEditing.value ? 'updated' : 'created'} successfully`,
+            type: 'success',
+          })
           dialogVisible.value = false
           await fetchRoles()
         }
       } catch (error) {
-        ElMessage.error(`Failed to ${isEditing.value ? 'update' : 'create'} role`)
+        // ElMessage.error(`Failed to ${isEditing.value ? 'update' : 'create'} role`)
+        ElNotification({
+          title: 'Error',
+          message: `Failed to ${isEditing.value ? 'update' : 'create'} role`,
+          type: 'error',
+        })
         console.error(error)
       } finally {
         submitting.value = false
@@ -506,7 +516,12 @@ const handleDelete = async (role: Role) => {
 
     const response = await apiClient.delete(`/role/api/roles/${role.id}/`)
     if (response.data.code === 200) {
-      ElMessage.success('Role deleted successfully')
+      // ElMessage.success('Role deleted successfully')
+      ElNotification({
+        title: 'Success',
+        message: 'Role deleted successfully',
+        type: 'success',
+      })
       await fetchRoles()
     }
   } catch (error) {
