@@ -31,6 +31,15 @@
         </el-button>
         <UserDialog v-model="showAddDialog" mode="add" @success="fetchUsers" />
       </div>
+       <!-- Show deleted items -->
+      <div class="flex items-center gap-2">
+        <el-switch
+          v-model="showDeleted"
+          active-text="Show Deleted"
+          inactive-text="Hide Deleted"
+          @change="handleShowDeletedChange"
+        />
+      </div>
 
       <!-- Desktop View (md and up) -->
       <div class="hidden md:block">
@@ -75,8 +84,11 @@
 
           <el-table-column prop="status" label="Status" width="90" sortable="custom" align="center">
             <template #default="scope">
-              <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
-                {{ scope.row.status === 1 ? 'Active' : 'Inactive' }}
+              <el-tag
+              :type="getStatusType(scope.row)"
+              :effect="scope.row.deleted_at ? 'dark': 'light'"
+              >
+              {{ getStatusText(scope.row) }}
               </el-tag>
             </template>
           </el-table-column>
@@ -300,6 +312,23 @@ const searchQuery = ref('')
 const searchTimeout = ref<number | null>(null)
 const searchLoading = ref(false)
 
+// Show deleted items or not
+const showDeleted = ref(false)
+const handleShowDeletedChange = () => {
+  currentPage.value = 1 // Reset to first page
+  fetchUsers()
+}
+// Update status in table
+const getStatusType = (user: User) => {
+  if (user.deleted_at) return 'danger'
+  return user.status === 1 ? 'success' : 'danger'
+}
+
+const getStatusText = (user: User) => {
+  if (user.deleted_at) return 'Deleted'
+  return user.status === 1 ? 'Active' : 'Inactive'
+}
+
 // Add user dialog
 const showAddDialog = ref(false)
 
@@ -510,6 +539,9 @@ const fetchUsers = async () => {
       params.phone = searchQuery.value
       params.comment = searchQuery.value
     }
+
+    // Add show_deleted parameter
+    params.show_deleted = showDeleted.value
 
     const response = await apiClient.get('/user/api/users/', {
       params,
