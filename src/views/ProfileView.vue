@@ -353,7 +353,7 @@
                     Available Roles
                   </h4>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Select at least one role. Your current roles are highlighted.
+                    Select roles to assign. Your current roles are highlighted.
                   </p>
                 </div>
 
@@ -388,7 +388,7 @@
                 </div>
 
                 <!-- Warning Message -->
-                <div
+                <!-- <div
                   v-if="showRoleWarning"
                   class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg"
                 >
@@ -398,7 +398,7 @@
                       Please select at least one role to continue.
                     </div>
                   </div>
-                </div>
+                </div> -->
 
                 <!-- Form Actions -->
                 <div
@@ -454,7 +454,7 @@ import {
   User as UserIcon,
   Message,
   Phone,
-  Warning,
+  // Warning,
 } from '@element-plus/icons-vue'
 import type { Role } from '@/types/Role'
 import type { User } from '@/types/User'
@@ -570,7 +570,9 @@ const hasRolesChanged = computed(() => {
   return selectedRoles.value.some((roleId) => !initialRoles.value.includes(roleId))
 })
 const canSaveRoles = computed(() => {
-  return hasRolesChanged.value && selectedRoles.value.length > 0
+  // return hasRolesChanged.value && selectedRoles.value.length > 0
+  // Remove the length check - allow saving with no roles selected
+  return hasRolesChanged.value
 })
 const fetchAvailableRoles = async () => {
   try {
@@ -604,10 +606,11 @@ const onRolesReset = () => {
   showRoleWarning.value = false
 }
 const onRolesSave = async () => {
-  if (selectedRoles.value.length === 0) {
-    showRoleWarning.value = true
-    return
-  }
+  // Remove the selected roles validation
+  // if (selectedRoles.value.length === 0) {
+  //   showRoleWarning.value = true
+  //   return
+  // }
 
   isRolesSaving.value = true
   try {
@@ -615,7 +618,7 @@ const onRolesSave = async () => {
       ? `/user/api/users/${props.userId}/roles/`
       : '/user/api/profile/roles/'
     const response = await apiClient.post(url, {
-      roles: selectedRoles.value,
+      roles: selectedRoles.value, // Can now be empty array
     })
 
     if (response.data.code === 200) {
