@@ -2,6 +2,34 @@
   <div class="bg-white dark:bg-gray-800">
     <!-- Main Container -->
     <div class="p-1">
+      <!-- Search Bar Container -->
+      <div class="w-full flex flex-col sm:flex-row justify-between items-center gap-2 mb-2">
+        <div class="w-full sm:w-96">
+          <el-input
+            v-model="searchQuery"
+            placeholder="Search by role name, code or comment..."
+            clearable
+            :loading="searchLoading"
+            @clear="clearSearch"
+            @input="handleSearch"
+            @keyup.enter="handleEnterSearch"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+            <template #suffix>
+              <el-icon v-if="searchLoading" class="animate-spin">
+                <Loading />
+              </el-icon>
+            </template>
+          </el-input>
+        </div>
+        <!-- Only show Add Role button for users with admin role -->
+        <el-button v-if="hasAdminRole" type="primary" @click="handleAddRole">
+          <el-icon class="mr-2"><Plus /></el-icon>
+          Add Role
+        </el-button>
+      </div>
       <!-- Desktop View (md and up) -->
       <div class="hidden md:block">
         <el-table
@@ -267,9 +295,12 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { Edit, Delete } from '@element-plus/icons-vue'
+import { Search, Plus, Edit, Delete, Loading } from '@element-plus/icons-vue'
 import apiClient from '@/utils/apiClient'
 import type { Role } from '@/types/Role'
+import { useAuthStore } from '@/stores/authStore'
+
+const authStore = useAuthStore()
 
 // State
 const loading = ref(false)
@@ -314,6 +345,11 @@ const roleRules = {
     { min: 2, max: 100, message: 'Length should be 2 to 100 characters', trigger: 'blur' },
   ],
 }
+
+// Add computed property for admin check
+const hasAdminRole = computed(() => {
+  return authStore.user?.roles?.some((role) => role.code === 'admin') ?? false
+})
 
 // Add controller for cleanup
 const controller = new AbortController()
@@ -375,6 +411,46 @@ const fetchRoles = async () => {
     loading.value = false
     searchLoading.value = false
   }
+}
+
+const handleSearch = () => {
+  if (searchTimeout.value) {
+    window.clearTimeout(searchTimeout.value)
+  }
+
+  searchTimeout.value = window.setTimeout(() => {
+    searchLoading.value = true
+    currentPage.value = 1 // Reset to first page when searching
+    fetchRoles()
+  }, 800) // 800ms debounce
+}
+
+const handleEnterSearch = () => {
+  if (searchTimeout.value) {
+    window.clearTimeout(searchTimeout.value)
+  }
+  searchLoading.value = true
+  currentPage.value = 1
+  fetchRoles()
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchLoading.value = true
+  currentPage.value = 1
+  fetchRoles()
+}
+
+const handleAddRole = () => {
+  isEditing.value = false
+  roleForm.value = {
+    id: null,
+    name: '',
+    code: '',
+    status: 1,
+    remark: '',
+  }
+  dialogVisible.value = true
 }
 
 const handleEdit = (role: Role) => {
