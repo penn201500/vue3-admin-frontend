@@ -389,7 +389,7 @@ const fetchRoles = async () => {
     }
 
     // Construct params
-    const params: Record<string, any> = {
+    const params: Record<string, unknown> = {
       page: currentPage.value,
       pageSize: pageSize.value,
       ordering,
