@@ -512,7 +512,7 @@ const fetchUsers = async () => {
     if (response.data.code === 200) {
       // Store users first
       users.value = response.data.data
-      total.value = response.data.count // Total count from backend
+      total.value = response.data.count || 0 // Total count from backend
 
       // Fetch avatars for all users
       const avatarPromises = users.value.map((user) =>

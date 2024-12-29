@@ -354,7 +354,7 @@ const fetchRoles = async () => {
     const response = await apiClient.get('/role/api/roles/', { params })
     if (response.data.code === 200) {
       roles.value = response.data.data
-      total.value = response.data.count
+      total.value = response.data.count || 0
     }
   } catch (error) {
     ElMessage.error('Failed to fetch roles')
