@@ -29,6 +29,7 @@
           <el-icon class="mr-2"><Plus /></el-icon>
           Add User
         </el-button>
+        <UserDialog v-model="showAddDialog" mode="add" @success="fetchUsers" />
       </div>
 
       <!-- Desktop View (md and up) -->
@@ -282,6 +283,7 @@ import { Search, Plus, Edit, Delete, UserFilled, Loading } from '@element-plus/i
 import { useAuthStore } from '@/stores/authStore'
 import type { Role } from '@/types/Role'
 import { useTabStore } from '@/stores/tabStore'
+import UserDialog from './UserDialog.vue'
 
 // Search
 interface SearchParams {
@@ -297,6 +299,9 @@ interface SearchParams {
 const searchQuery = ref('')
 const searchTimeout = ref<number | null>(null)
 const searchLoading = ref(false)
+
+// Add user dialog
+const showAddDialog = ref(false)
 
 // Handle user edit
 const tabStore = useTabStore()
@@ -439,7 +444,9 @@ const handleDelete = async (user: User) => {
   }
 }
 
-const handleAddUser = {}
+const handleAddUser = () => {
+  showAddDialog.value = true
+}
 
 // Implement the debounced search handler
 const handleSearch = () => {
