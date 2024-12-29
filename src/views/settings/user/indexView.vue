@@ -24,21 +24,31 @@
             </template>
           </el-input>
         </div>
-        <!-- Only show Add User button for users with admin role -->
-        <el-button v-if="hasAdminRole" type="primary" @click="handleAddUser">
-          <el-icon class="mr-2"><Plus /></el-icon>
-          Add User
-        </el-button>
-        <UserDialog v-model="showAddDialog" mode="add" @success="fetchUsers" />
-      </div>
-       <!-- Show deleted items -->
-      <div class="flex items-center gap-2">
-        <el-switch
-          v-model="showDeleted"
-          active-text="Show Deleted"
-          inactive-text="Hide Deleted"
-          @change="handleShowDeletedChange"
-        />
+        <!-- Actions Group -->
+        <div class="flex items-center gap-3">
+          <!-- Show/Hide Deleted Switch -->
+          <div class="flex items-center gap-1">
+            <el-switch
+              v-model="showDeleted"
+              size="small"
+              :active-text="showDeleted ? 'Show' : 'Hide'"
+              :inactive-text="showDeleted ? 'Show' : 'Hide'"
+              inline-prompt
+              @change="handleShowDeletedChange"
+            />
+            <el-tooltip content="Show or hide deleted users" trigger="click" placement="top">
+              <el-icon class="cursor-pointer text-gray-400 hover:text-gray-600">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
+          <!-- Only show Add User button for users with admin role -->
+          <el-button v-if="hasAdminRole" type="primary" @click="handleAddUser">
+            <el-icon class="mr-2"><Plus /></el-icon>
+            Add User
+          </el-button>
+          <UserDialog v-model="showAddDialog" mode="add" @success="fetchUsers" />
+        </div>
       </div>
 
       <!-- Desktop View (md and up) -->
@@ -85,10 +95,10 @@
           <el-table-column prop="status" label="Status" width="90" sortable="custom" align="center">
             <template #default="scope">
               <el-tag
-              :type="getStatusType(scope.row)"
-              :effect="scope.row.deleted_at ? 'dark': 'light'"
+                :type="getStatusType(scope.row)"
+                :effect="scope.row.deleted_at ? 'dark' : 'light'"
               >
-              {{ getStatusText(scope.row) }}
+                {{ getStatusText(scope.row) }}
               </el-tag>
             </template>
           </el-table-column>
@@ -291,7 +301,7 @@ import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import type { User } from '@/types/User'
 import apiClient from '@/utils/apiClient'
 import axios from 'axios'
-import { Search, Plus, Edit, Delete, UserFilled, Loading } from '@element-plus/icons-vue'
+import { Search, Plus, Edit, Delete, UserFilled, Loading, QuestionFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/authStore'
 import type { Role } from '@/types/Role'
 import { useTabStore } from '@/stores/tabStore'
