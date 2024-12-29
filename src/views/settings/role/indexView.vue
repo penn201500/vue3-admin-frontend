@@ -211,17 +211,28 @@
     <el-dialog
       v-model="dialogVisible"
       :title="isEditing ? 'Edit Role' : 'Add Role'"
-      width="500px"
       destroy-on-close
+      class="w-[90%] sm:w-[500px] mx-auto"
     >
-      <el-form ref="roleFormRef" :model="roleForm" :rules="roleRules" label-position="top">
-        <el-form-item label="Role Name" prop="name">
-          <el-input v-model="roleForm.name" placeholder="Enter role name" />
+      <el-form
+        ref="roleFormRef"
+        :model="roleForm"
+        :rules="roleRules"
+        label-position="top"
+        class="w-full px-4 sm:px-6"
+      >
+        <el-form-item label="Role Name" prop="name" class="mb-4">
+          <el-input v-model="roleForm.name" placeholder="Enter role name" class="w-full" />
         </el-form-item>
-        <el-form-item label="Role Code" prop="code">
-          <el-input v-model="roleForm.code" placeholder="Enter role code" :disabled="isEditing" />
+        <el-form-item label="Role Code" prop="code" class="mb-4">
+          <el-input
+            v-model="roleForm.code"
+            placeholder="Enter role code"
+            :disabled="isEditing"
+            class="w-full"
+          />
         </el-form-item>
-        <el-form-item label="Status" prop="status">
+        <el-form-item label="Status" prop="status" class="mb-4">
           <el-switch
             v-model="roleForm.status"
             :active-value="1"
@@ -230,17 +241,18 @@
             inactive-text="Inactive"
           />
         </el-form-item>
-        <el-form-item label="Comment" prop="remark">
+        <el-form-item label="Comment" prop="remark" class="mb-4">
           <el-input
             v-model="roleForm.remark"
             type="textarea"
             rows="3"
             placeholder="Enter comment"
+            class="w-full"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="flex justify-end space-x-2">
+        <div class="flex justify-end space-x-2 px-4 sm:px-6">
           <el-button @click="dialogVisible = false">Cancel</el-button>
           <el-button type="primary" @click="handleSubmit" :loading="submitting">
             {{ isEditing ? 'Update' : 'Create' }}
@@ -252,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { Edit, Delete } from '@element-plus/icons-vue'
