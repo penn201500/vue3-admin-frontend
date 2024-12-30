@@ -85,7 +85,7 @@ const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'bizm/PostView': () => import('@/views/bizm/PostView.vue'),
   'settings/user/index': () => import('@/views/settings/user/UserManagement.vue'),
   'settings/role/index': () => import('@/views/settings/role/RoleManagement.vue'),
-  'settings/menu/index': () => import('@/views/settings/menu/indexView.vue'),
+  'settings/menu/index': () => import('@/views/settings/menu/MenuManagement.vue'),
   'profile': () => import('@/views/ProfileView.vue'),
   'ProfileView': () => import('@/views/ProfileView.vue'),
   'userProfile': () => import('@/views/ProfileView.vue'),
