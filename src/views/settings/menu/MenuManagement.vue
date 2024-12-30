@@ -197,7 +197,8 @@ const filteredMenus = computed(() => {
       menu.name.toLowerCase().includes(searchLower) ||
       menu.path?.toLowerCase().includes(searchLower) ||
       menu.component?.toLowerCase().includes(searchLower) ||
-      menu.perms?.toLowerCase().includes(searchLower)
+      menu.perms?.toLowerCase().includes(searchLower) ||
+      menu.remark?.toLowerCase().includes(searchLower)
 
     if (matches) return menu
 
