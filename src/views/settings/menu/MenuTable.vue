@@ -13,14 +13,6 @@
   >
     <el-table-column prop="name" label="Menu Name" min-width="240" />
 
-    <el-table-column prop="icon" label="Icon" width="60" align="center">
-      <template #default="{ row }">
-        <el-icon v-if="row.icon" class="text-lg">
-          <component :is="getIcon(row.icon)" />
-        </el-icon>
-      </template>
-    </el-table-column>
-
     <el-table-column prop="path" label="Router Path" min-width="180" show-overflow-tooltip />
 
     <el-table-column prop="component" label="Component Path" min-width="180" show-overflow-tooltip>
@@ -59,7 +51,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
-import { getIcon } from '@/utils/iconUtils'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { MenuItem } from '@/types/Menu'
 

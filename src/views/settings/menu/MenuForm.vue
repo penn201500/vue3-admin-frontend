@@ -12,10 +12,6 @@
       </el-form-item>
 
       <div class="flex justify-between">
-        <el-form-item label="Icon" prop="icon">
-          <icon-picker v-model="form.icon" />
-        </el-form-item>
-
         <el-form-item label="Status">
           <el-radio-group v-model="form.status" class="w-full">
             <el-radio-button :label="1">Enabled</el-radio-button>
@@ -59,7 +55,6 @@
 import { ref, computed, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 // import { QuestionFilled } from '@element-plus/icons-vue'
-import IconPicker from '@/components/IconPicker.vue'
 import type { MenuItem, MenuFormData } from '@/types/Menu'
 
 const props = defineProps<{

@@ -63,12 +63,6 @@
           <!-- Card Header -->
           <div class="p-4 border-b dark:border-gray-700">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <el-icon v-if="menu.icon" class="text-lg">
-                  <component :is="getIcon(menu.icon)" />
-                </el-icon>
-                <div class="font-medium">{{ menu.name }}</div>
-              </div>
               <el-tag :type="menu.status === 1 ? 'success' : 'danger'">
                 {{ menu.status === 1 ? 'Enabled' : 'Disabled' }}
               </el-tag>
@@ -136,7 +130,6 @@ import MenuTable from './MenuTable.vue'
 import MenuForm from './MenuForm.vue'
 import apiClient from '@/utils/apiClient'
 import type { MenuItem } from '@/types/Menu'
-import { getIcon } from '@/utils/iconUtils'
 
 // State
 const loading = ref(false)
