@@ -135,9 +135,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Search, Plus } from '@element-plus/icons-vue'
+import { Search, Plus, Loading, Edit, Delete } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import MenuTable from './MenuTable.vue'
+import MenuForm from './MenuForm.vue'
 import apiClient from '@/utils/apiClient'
 import type { MenuItem } from '@/types/Menu'
 import { getIcon } from '@/utils/iconUtils'
