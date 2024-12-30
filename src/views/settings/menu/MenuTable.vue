@@ -1,8 +1,8 @@
 <template>
   <el-table
     ref="tableRef"
-    v-loading="loading"
-    :data="menus"
+    v-loading="props.loading"
+    :data="props.menus"
     row-key="id"
     :stripe="true"
     :border="true"
@@ -29,7 +29,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column prop="order_num" label="Order" width="80" align="center" />
+    <!-- <el-table-column prop="order_num" label="Order" width="80" align="center" /> -->
 
     <el-table-column prop="status" label="Status" width="100" align="center">
       <template #default="{ row }">
@@ -57,26 +57,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import { getIcon } from '@/utils/iconUtils'
-import Sortable from 'sortablejs'
-import type { SortableEvent } from 'sortablejs'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { MenuItem } from '@/types/Menu'
-
-const props = defineProps<{
-  menus: MenuItem[]
-  loading: boolean
-}>()
 
 const emit = defineEmits<{
   (e: 'edit', menu: MenuItem): void
   (e: 'delete', menu: MenuItem): void
-  (
-    e: 'drop',
-    data: { dragNode: MenuItem; dropNode: MenuItem; type: 'inner' | 'before' | 'after' },
-  ): void
+}>()
+
+const props = defineProps<{
+  loading: boolean
+  menus: MenuItem[]
 }>()
 
 const tableRef = ref()
@@ -109,37 +103,4 @@ const handleDelete = async (row: MenuItem) => {
     // User cancelled
   }
 }
-
-const initSortable = () => {
-  const el = tableRef.value?.$el.querySelector('.el-table__body-wrapper tbody')
-  if (!el) return
-
-  new Sortable(el, {
-    group: 'nested',
-    animation: 150,
-    fallbackOnBody: true,
-    dragClass: 'sortable-drag',
-    ghostClass: 'sortable-ghost',
-    onEnd: (evt: SortableEvent) => {
-      const { newIndex, oldIndex } = evt
-      if (typeof newIndex === 'number' && typeof oldIndex === 'number') {
-        const dragNode = props.menus[oldIndex]
-        const dropNode = props.menus[newIndex]
-        if (dragNode && dropNode) {
-          let type: 'inner' | 'before' | 'after' = 'after'
-          if (dropNode.children?.length || newIndex < oldIndex) {
-            type = 'inner'
-          }
-          emit('drop', { dragNode, dropNode, type })
-        }
-      }
-    },
-  })
-}
-
-onMounted(() => {
-  if (tableRef.value) {
-    initSortable()
-  }
-})
 </script>

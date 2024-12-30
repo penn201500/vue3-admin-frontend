@@ -37,7 +37,6 @@
           :loading="loading"
           @edit="handleEdit"
           @delete="handleDelete"
-          @drop="handleDrop"
         />
 
         <!-- Desktop Pagination -->
@@ -86,10 +85,6 @@
               <div>
                 <div class="text-gray-500">Component Path</div>
                 <div>{{ menu.component || '-' }}</div>
-              </div>
-              <div>
-                <div class="text-gray-500">Order</div>
-                <div>{{ menu.order_num }}</div>
               </div>
               <div>
                 <div class="text-gray-500">Comment</div>
@@ -293,47 +288,6 @@ const handleDelete = async (menu: MenuItem) => {
   } catch (error) {
     ElMessage.error('Failed to delete menu')
     console.error('Error deleting menu:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleDrop = async ({
-  dragNode,
-  dropNode,
-  type,
-}: {
-  dragNode: MenuItem
-  dropNode: MenuItem
-  type: 'inner' | 'before' | 'after'
-}) => {
-  try {
-    loading.value = true
-
-    let newParentId = dropNode.parent_id
-    let newOrderNum = dropNode.order_num
-
-    if (type === 'inner') {
-      newParentId = dropNode.id
-      newOrderNum = dropNode.children?.length || 0
-    } else if (type === 'before') {
-      newOrderNum = dropNode.order_num
-    } else {
-      newOrderNum = dropNode.order_num + 1
-    }
-
-    const response = await apiClient.put(`/menu/api/menus/${dragNode.id}/`, {
-      parent_id: newParentId,
-      order_num: newOrderNum,
-    })
-
-    if (response.data.code === 200) {
-      ElMessage.success('Menu position updated')
-      await fetchMenus()
-    }
-  } catch (error) {
-    ElMessage.error('Failed to update menu position')
-    console.error('Error updating menu position:', error)
   } finally {
     loading.value = false
   }
