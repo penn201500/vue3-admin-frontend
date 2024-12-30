@@ -85,7 +85,7 @@ export const useAuthStore = defineStore('auth', {
 
     async fetchUserMenus() {
       try {
-        const response = await apiClient.get('/menu/user-menu/')
+        const response = await apiClient.get('/menu/api/menus/')
         if (response.data.code === 200) {
           this.userMenus = response.data.data // Store menus in a state variable
           saveMenusToSessionStorage(this.userMenus) // Save to sessionStorage
