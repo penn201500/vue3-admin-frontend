@@ -1,38 +1,125 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 min-h-screen p-4">
-    <!-- Header Actions -->
-    <div class="flex justify-between items-center mb-4">
-      <el-input v-model="searchQuery" placeholder="Search menus..." clearable class="w-80">
-        <template #prefix>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
+  <div class="bg-white dark:bg-gray-800">
+    <!-- Main Container -->
+    <div class="p-1">
+      <!-- Search Bar Container -->
+      <div class="w-full flex flex-col sm:flex-row justify-between items-center gap-2 mb-2">
+        <div class="w-full sm:w-96">
+          <el-input
+            v-model="searchQuery"
+            placeholder="Search menus..."
+            clearable
+            :loading="loading"
+            @clear="clearSearch"
+            @input="handleSearch"
+            @keyup.enter="handleEnterSearch"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+            <template #suffix>
+              <el-icon v-if="loading" class="animate-spin">
+                <Loading />
+              </el-icon>
+            </template>
+          </el-input>
+        </div>
 
-      <el-button type="primary" @click="handleAdd">
-        <el-icon class="mr-2"><Plus /></el-icon>Add Menu
-      </el-button>
-    </div>
+        <el-button type="primary" @click="handleAdd">
+          <el-icon class="mr-2"><Plus /></el-icon>Add Menu
+        </el-button>
+      </div>
 
-    <!-- Menu Table -->
-    <menu-table
-      :menus="filteredMenus"
-      :loading="loading"
-      @edit="handleEdit"
-      @delete="handleDelete"
-      @drop="handleDrop"
-    />
+      <!-- Desktop View (md and up) -->
+      <div class="hidden md:block">
+        <menu-table
+          :menus="filteredMenus"
+          :loading="loading"
+          @edit="handleEdit"
+          @delete="handleDelete"
+          @drop="handleDrop"
+        />
 
-    <!-- Pagination -->
-    <div class="flex justify-end mt-4">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 30, 50]"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+        <!-- Desktop Pagination -->
+        <div class="flex justify-end mt-4">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 30, 50]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+      </div>
+
+      <!-- Mobile View (sm and down) -->
+      <div class="md:hidden space-y-4">
+        <div
+          v-for="menu in filteredMenus"
+          :key="menu.id"
+          class="bg-white dark:bg-gray-900 rounded-lg shadow-sm"
+        >
+          <!-- Card Header -->
+          <div class="p-4 border-b dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <el-icon v-if="menu.icon" class="text-lg">
+                  <component :is="getIcon(menu.icon)" />
+                </el-icon>
+                <div class="font-medium">{{ menu.name }}</div>
+              </div>
+              <el-tag :type="menu.status === 1 ? 'success' : 'danger'">
+                {{ menu.status === 1 ? 'Enabled' : 'Disabled' }}
+              </el-tag>
+            </div>
+          </div>
+
+          <!-- Card Content -->
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <div class="text-gray-500">Router Path</div>
+                <div>{{ menu.path || '-' }}</div>
+              </div>
+              <div>
+                <div class="text-gray-500">Component Path</div>
+                <div>{{ menu.component || '-' }}</div>
+              </div>
+              <div>
+                <div class="text-gray-500">Order</div>
+                <div>{{ menu.order_num }}</div>
+              </div>
+              <div>
+                <div class="text-gray-500">Comment</div>
+                <div class="truncate">{{ menu.remark || '-' }}</div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-2 pt-4 border-t dark:border-gray-700 mt-4">
+              <el-button type="primary" size="small" @click="handleEdit(menu)">
+                <el-icon class="mr-1"><Edit /></el-icon>Edit
+              </el-button>
+              <el-button type="danger" size="small" @click="handleDelete(menu)">
+                <el-icon class="mr-1"><Delete /></el-icon>Delete
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Pagination -->
+        <div class="flex justify-center mt-6">
+          <el-pagination
+            v-model:current-page="currentPage"
+            :page-size="pageSize"
+            :total="total"
+            layout="prev, pager, next"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Menu Form Dialog -->
@@ -53,6 +140,7 @@ import { ElMessage } from 'element-plus'
 import MenuTable from './MenuTable.vue'
 import apiClient from '@/utils/apiClient'
 import type { MenuItem } from '@/types/Menu'
+import { getIcon } from '@/utils/iconUtils'
 
 // State
 const loading = ref(false)
@@ -65,6 +153,36 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+
+// Search
+const searchTimeout = ref<number | null>(null)
+const searchLoading = ref(false)
+const handleSearch = () => {
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+
+  searchTimeout.value = window.setTimeout(() => {
+    searchLoading.value = true
+    currentPage.value = 1 // Reset to first page when searching
+    fetchMenus()
+  }, 800)
+}
+
+const handleEnterSearch = () => {
+  if (searchTimeout.value) {
+    window.clearTimeout(searchTimeout.value)
+  }
+  searchLoading.value = true
+  currentPage.value = 1
+  fetchMenus()
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  currentPage.value = 1
+  fetchMenus()
+}
 
 // Computed
 const filteredMenus = computed(() => {
