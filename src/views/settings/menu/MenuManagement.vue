@@ -56,7 +56,7 @@
       <!-- Mobile View (sm and down) -->
       <div class="md:hidden space-y-4">
         <div
-          v-for="menu in filteredMenus"
+          v-for="menu in flattenedMenus"
           :key="menu.id"
           class="bg-white dark:bg-gray-900 rounded-lg shadow-sm"
         >
@@ -149,6 +149,21 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+
+// For mobile menu items view
+const flattenedMenus = computed(() => {
+  const result: MenuItem[] = []
+  const flattenMenu = (items: MenuItem[]) => {
+    items.forEach((item) => {
+      result.push(item)
+      if (item.children?.length) {
+        flattenMenu(item.children)
+      }
+    })
+  }
+  flattenMenu(filteredMenus.value)
+  return result
+})
 
 // Search
 const searchTimeout = ref<number | null>(null)
