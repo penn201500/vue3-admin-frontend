@@ -317,6 +317,7 @@ interface SearchParams {
   ordering?: string // Keep existing ordering
   page?: number
   pageSize?: number
+  show_deleted?: boolean
 }
 const searchQuery = ref('')
 const searchTimeout = ref<number | null>(null)
