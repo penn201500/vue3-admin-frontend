@@ -2,12 +2,7 @@
   <div class="bg-white dark:bg-gray-800 min-h-screen p-4">
     <!-- Header Actions -->
     <div class="flex justify-between items-center mb-4">
-      <el-input
-        v-model="searchQuery"
-        placeholder="Search menus..."
-        clearable
-        class="w-80"
-      >
+      <el-input v-model="searchQuery" placeholder="Search menus..." clearable class="w-80">
         <template #prefix>
           <el-icon><Search /></el-icon>
         </template>
@@ -26,6 +21,19 @@
       @delete="handleDelete"
       @drop="handleDrop"
     />
+
+    <!-- Pagination -->
+    <div class="flex justify-end mt-4">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 30, 50]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- Menu Form Dialog -->
     <menu-form
@@ -46,7 +54,6 @@ import MenuTable from './MenuTable.vue'
 import apiClient from '@/utils/apiClient'
 import type { MenuItem } from '@/types/Menu'
 
-
 // State
 const loading = ref(false)
 const submitting = ref(false)
@@ -54,6 +61,10 @@ const dialogVisible = ref(false)
 const currentMenu = ref<MenuItem | null>(null)
 const menus = ref<MenuItem[]>([])
 const searchQuery = ref('')
+// Pagination
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // Computed
 const filteredMenus = computed(() => {
@@ -81,7 +92,7 @@ const filteredMenus = computed(() => {
       if (matchingChildren.length) {
         return {
           ...menu,
-          children: matchingChildren
+          children: matchingChildren,
         }
       }
     }
@@ -89,18 +100,35 @@ const filteredMenus = computed(() => {
     return null
   }
 
-  return menus.value
-    .map(searchInMenu)
-    .filter((menu): menu is MenuItem => menu !== null)
+  return menus.value.map(searchInMenu).filter((menu): menu is MenuItem => menu !== null)
 })
+
+// Pagination
+const handleSizeChange = async (val: number) => {
+  pageSize.value = val
+  currentPage.value = 1 // Reset to first page when changing page size
+  await fetchMenus()
+}
+
+const handleCurrentChange = async (val: number) => {
+  currentPage.value = val
+  await fetchMenus()
+}
 
 // API Methods
 const fetchMenus = async () => {
   loading.value = true
   try {
-    const response = await apiClient.get('/menu/api/menus/')
+    const params = {
+      page: currentPage.value,
+      pageSize: pageSize.value,
+    }
+
+    const response = await apiClient.get('/menu/api/menus/', { params })
+
     if (response.data.code === 200) {
       menus.value = response.data.data
+      total.value = response.data.count || 0
     }
   } catch (error) {
     ElMessage.error('Failed to fetch menus')
@@ -150,7 +178,11 @@ const handleDelete = async (menu: MenuItem) => {
   }
 }
 
-const handleDrop = async ({ dragNode, dropNode, type }: {
+const handleDrop = async ({
+  dragNode,
+  dropNode,
+  type,
+}: {
   dragNode: MenuItem
   dropNode: MenuItem
   type: 'inner' | 'before' | 'after'
@@ -163,7 +195,7 @@ const handleDrop = async ({ dragNode, dropNode, type }: {
 
     if (type === 'inner') {
       newParentId = dropNode.id
-      newOrderNum = (dropNode.children?.length || 0)
+      newOrderNum = dropNode.children?.length || 0
     } else if (type === 'before') {
       newOrderNum = dropNode.order_num
     } else {
@@ -172,7 +204,7 @@ const handleDrop = async ({ dragNode, dropNode, type }: {
 
     const response = await apiClient.put(`/menu/api/menus/${dragNode.id}/`, {
       parent_id: newParentId,
-      order_num: newOrderNum
+      order_num: newOrderNum,
     })
 
     if (response.data.code === 200) {
