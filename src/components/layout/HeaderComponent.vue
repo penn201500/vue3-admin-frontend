@@ -22,39 +22,8 @@
         </div>
       </div>
 
-      <!-- Center Section - Search -->
-      <div class="flex-grow max-w-2xl mx-4 hidden md:block">
-        <el-input
-          v-model="searchText"
-          placeholder="Search..."
-          class="w-full !bg-gray-50 dark:!bg-gray-700"
-        >
-          <template #prefix>
-            <el-icon class="text-gray-400"><Search /></el-icon>
-          </template>
-          <template #suffix v-if="searchText">
-            <el-icon
-              class="cursor-pointer text-gray-400 hover:text-gray-600"
-              @click="searchText = ''"
-            >
-              <Close />
-            </el-icon>
-          </template>
-        </el-input>
-      </div>
-
       <!-- Right Section -->
       <div class="flex items-center gap-3">
-        <!-- Mobile Search Toggle -->
-        <el-button
-          class="sm:flex md:hidden items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2"
-          @click="toggleMobileSearch"
-        >
-          <el-icon class="text-gray-500 dark:text-gray-400">
-            <Search />
-          </el-icon>
-        </el-button>
-
         <!-- Theme Switch -->
         <el-switch
           v-model="isDarkMode"
@@ -119,46 +88,11 @@
         </el-dropdown>
       </div>
     </div>
-
-    <!-- Mobile Search Bar -->
-    <div
-      v-if="showMobileSearch"
-      class="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-800 px-4 py-6 transition-opacity duration-200 ease-in-out"
-    >
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Search</h2>
-        <button
-          @click="toggleMobileSearch"
-          class="text-gray-500 hover:text-gray-700 dark:text-gray-300"
-        >
-          <el-icon><Close /></el-icon>
-        </button>
-      </div>
-      <el-input
-        v-model="searchText"
-        placeholder="Type to search..."
-        class="w-full bg-gray-50 dark:bg-gray-700"
-      >
-        <template #prefix>
-          <el-icon class="text-gray-400"><Search /></el-icon>
-        </template>
-        <template #suffix v-if="searchText">
-          <el-icon
-            class="cursor-pointer text-gray-400 hover:text-gray-600"
-            @click="searchText = ''"
-          >
-            <Close />
-          </el-icon>
-        </template>
-      </el-input>
-    </div>
   </el-header>
 </template>
 
 <script setup lang="ts">
 import {
-  Search,
-  Close,
   // Bell,  // Uncomment when notifications are implemented
   Menu,
   Setting,
@@ -168,7 +102,7 @@ import {
   CaretBottom,
   SwitchButton,
 } from '@element-plus/icons-vue'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useAuthStore } from '@/stores/authStore'
 import { useTabStore } from '@/stores/tabStore'
@@ -179,8 +113,6 @@ const homeLayoutStore = useIsCollapsedStore()
 const authStore = useAuthStore()
 const tabStore = useTabStore()
 const router = useRouter()
-const searchText = ref('')
-const showMobileSearch = ref(false)
 
 const isCollapsed = computed(() => homeLayoutStore.isCollapsed)
 const user = computed(() => authStore.user)
@@ -212,10 +144,6 @@ const handleCommand = async (command: string) => {
     default:
       break
   }
-}
-
-const toggleMobileSearch = () => {
-  showMobileSearch.value = !showMobileSearch.value
 }
 </script>
 
