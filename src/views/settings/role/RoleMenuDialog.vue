@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="Role Menus"
-    width="500px"
+    class="w-[90%] sm:w-[500px] mx-auto"
     :close-on-click-modal="false"
     @closed="handleClose"
   >

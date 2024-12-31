@@ -3,7 +3,7 @@
     <el-dialog
       :title="title"
       v-model="dialogVisible"
-      width="500px"
+      class="w-[90%] sm:w-[500px] mx-auto"
       :close-on-click-modal="false"
       @closed="handleClose"
     >
