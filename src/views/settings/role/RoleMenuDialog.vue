@@ -14,6 +14,8 @@
           node-key="id"
           :props="defaultProps"
           :default-checked-keys="selectedMenus"
+          :check-strictly="false"
+          @check="handleCheck"
           class="mb-4"
         />
       </div>
@@ -64,6 +66,10 @@
     label: 'name'
   }
 
+  const handleCheck = (node: any, {checkedKeys}: any) => {
+    selectedMenus.value = checkedKeys
+  }
+
   // Fetch menu tree
   const fetchMenuTree = async () => {
     try {
@@ -102,10 +108,12 @@
     if (!props.roleId || !treeRef.value) return
 
     submitting.value = true
+
     try {
       const checkedKeys = treeRef.value.getCheckedKeys() as number[]
-      const halfCheckedKeys = treeRef.value.getHalfCheckedKeys() as number[]
-      const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys]
+      // const halfCheckedKeys = treeRef.value.getHalfCheckedKeys() as number[]
+      // const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys]
+      const allSelectedKeys = checkedKeys
 
       const response = await apiClient.put(`/role/api/roles/${props.roleId}/menus/`, {
         menu_ids: allSelectedKeys
