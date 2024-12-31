@@ -29,6 +29,7 @@ export const useAuthStore = defineStore('auth', {
     rateLimit: false, // Track rate limiting
     rememberMe: false, // Track if 'remember me' is selected
     userMenus: loadMenusFromSessionStorage() as MenuItem[], // Load menus from sessionStorage
+    userRoleIds: [] as number[], // Store user role IDs
   }),
 
   // Computed Properties
