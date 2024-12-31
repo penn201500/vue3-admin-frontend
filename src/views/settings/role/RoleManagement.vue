@@ -105,12 +105,19 @@
               >
                 <div>
                   <el-button-group>
+                    <el-button type="warning" :icon="Menu" size="small" disabled />
                     <el-button type="primary" :icon="Edit" size="small" disabled />
                     <el-button type="danger" :icon="Delete" size="small" disabled />
                   </el-button-group>
                 </div>
               </el-tooltip>
               <el-button-group v-else>
+                <el-button
+                  type="warning"
+                  :icon="Menu"
+                  size="small"
+                  @click="handleMenuPermissions(scope.row)"
+                />
                 <el-button
                   type="primary"
                   :icon="Edit"
@@ -202,6 +209,9 @@
                 placement="top"
               >
                 <div class="flex gap-2">
+                  <el-button type="warning" size="small" disabled>
+                    <el-icon class="mr-1"><Menu /></el-icon>Permissions
+                  </el-button>
                   <el-button type="primary" size="small" disabled>
                     <el-icon class="mr-1"><Edit /></el-icon>Edit
                   </el-button>
@@ -211,6 +221,9 @@
                 </div>
               </el-tooltip>
               <template v-else>
+                <el-button type="warning" size="small" @click="handleMenuPermissions(role)">
+                  <el-icon class="mr-1"><Menu /></el-icon>Permissions
+                </el-button>
                 <el-button type="primary" size="small" @click="handleEdit(role)">
                   <el-icon class="mr-1"><Edit /></el-icon>Edit
                 </el-button>
@@ -234,6 +247,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Add RoleMenuDialog component -->
+    <RoleMenuDialog
+      v-model="showMenuDialog"
+      :role-id="selectedRoleId"
+      @success="handleMenuSuccess"
+    />
 
     <!-- Role Form Dialog -->
     <el-dialog
@@ -295,11 +315,12 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { Search, Plus, Edit, Delete, Loading } from '@element-plus/icons-vue'
+import { Search, Plus, Edit, Delete, Loading, Menu } from '@element-plus/icons-vue'
 import apiClient from '@/utils/apiClient'
 import type { Role } from '@/types/Role'
 import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
+import RoleMenuDialog from './RoleMenuDialog.vue'
 
 const authStore = useAuthStore()
 
@@ -310,6 +331,18 @@ const dialogVisible = ref(false)
 const isEditing = ref(false)
 const roles = ref<Role[]>([])
 const roleFormRef = ref<FormInstance>()
+
+// Role menu dialog
+const showMenuDialog = ref(false)
+const selectedRoleId = ref<number | null>(null)
+const handleMenuPermissions = (role: Role) => {
+  selectedRoleId.value = role.id
+  showMenuDialog.value = true
+}
+
+const handleMenuSuccess = () => {
+  fetchRoles() // Refresh the roles list if needed
+}
 
 // Search
 const searchQuery = ref('')
