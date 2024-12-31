@@ -58,6 +58,8 @@ export const useAuthStore = defineStore('auth', {
       this.user = user
       this.accessToken = accessToken
       this.rememberMe = rememberMe
+      this.userRoleIds = user.roles.map((role) => role.id)
+
       if (rememberMe) {
         localStorage.setItem('user', JSON.stringify(user))
       } else {
@@ -83,12 +85,13 @@ export const useAuthStore = defineStore('auth', {
       this.rateLimit = false // Reset rate limit flag
     },
 
-    async fetchUserMenus() {
+    async fetchUserMenus(userId?: number) {
       try {
-        const response = await apiClient.get('/menu/api/menus/')
+        const url = userId ? `/menu/api/users/${userId}/menus/` : '/menu/api/user-menus/'
+        const response = await apiClient.get(url)
         if (response.data.code === 200) {
-          this.userMenus = response.data.data // Store menus in a state variable
-          saveMenusToSessionStorage(this.userMenus) // Save to sessionStorage
+          this.userMenus = response.data.data
+          saveMenusToSessionStorage(this.userMenus)
           return true
         }
         return false

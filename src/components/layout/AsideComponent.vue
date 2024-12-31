@@ -155,9 +155,11 @@ const handleResize = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', handleResize)
   handleResize()
+  // Fetch menus for current user
+  await authStore.fetchUserMenus()
 })
 
 onBeforeUnmount(() => {
