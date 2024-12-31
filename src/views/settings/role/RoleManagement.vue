@@ -96,7 +96,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="Actions" width="120" align="center">
+          <el-table-column label="Actions" width="150" align="center">
             <template #default="scope">
               <el-tooltip
                 v-if="scope.row.is_system"
