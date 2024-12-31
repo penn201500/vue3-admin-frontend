@@ -170,7 +170,7 @@ function getIconComponent(iconName: string): Component | undefined {
     system: Setting,
     monitor: Monitor,
     user: User,
-    'tree-table': Files,
+    menus: Files,
     tree: OfficeBuilding,
     post: EditPen,
     grid: Grid,
