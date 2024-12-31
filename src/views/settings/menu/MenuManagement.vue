@@ -125,7 +125,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { Search, Plus, Loading, Edit, Delete } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import MenuTable from './MenuTable.vue'
 import MenuForm from './MenuForm.vue'
 import apiClient from '@/utils/apiClient'
@@ -272,12 +272,22 @@ const handleSubmit = async (formData: Partial<MenuItem>) => {
     const response = await apiClient[method](url, formData)
 
     if (response.data.code === 200) {
-      ElMessage.success(`Menu ${currentMenu.value ? 'updated' : 'created'} successfully`)
+      // ElMessage.success(`Menu ${currentMenu.value ? 'updated' : 'created'} successfully`)
+      ElNotification({
+        title: 'Success',
+        message: `Menu ${currentMenu.value ? 'updated' : 'created'} successfully`,
+        type: 'success',
+      })
       dialogVisible.value = false
       await fetchMenus()
     }
   } catch (error) {
-    ElMessage.error(`Failed to ${currentMenu.value ? 'update' : 'create'} menu`)
+    // ElMessage.error(`Failed to ${currentMenu.value ? 'update' : 'create'} menu`)
+    ElNotification({
+      title: 'Error',
+      message: `Failed to ${currentMenu.value ? 'update' : 'create'} menu`,
+      type: 'error',
+    })
     console.error('Error submitting menu:', error)
   } finally {
     submitting.value = false
@@ -290,7 +300,12 @@ const handleDelete = async (menu: MenuItem) => {
     const response = await apiClient.delete(`/menu/api/menus/${menu.id}/`)
 
     if (response.data.code === 200) {
-      ElMessage.success('Menu deleted successfully')
+      // ElMessage.success('Menu deleted successfully')
+      ElNotification({
+        title: 'Success',
+        message: 'Menu deleted successfully',
+        type: 'success',
+      })
       await fetchMenus()
     }
   } catch (error) {
