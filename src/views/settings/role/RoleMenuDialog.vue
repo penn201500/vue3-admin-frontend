@@ -1,161 +1,181 @@
 <template>
-    <el-dialog
-      v-model="dialogVisible"
-      title="Role Menus"
-      width="500px"
-      :close-on-click-modal="false"
-      @closed="handleClose"
-    >
-      <div class="w-full px-4">
-        <el-tree
-          ref="treeRef"
-          :data="menuTree"
-          show-checkbox
-          node-key="id"
-          :props="defaultProps"
-          :default-checked-keys="selectedMenus"
-          :check-strictly="false"
-          @check="handleCheck"
-          class="mb-4"
-        />
+  <el-dialog
+    v-model="dialogVisible"
+    title="Role Menus"
+    width="500px"
+    :close-on-click-modal="false"
+    @closed="handleClose"
+  >
+    <div class="w-full px-4">
+      <el-tree
+        ref="treeRef"
+        :data="menuTree"
+        show-checkbox
+        node-key="id"
+        :props="defaultProps"
+        :default-checked-keys="selectedMenus"
+        :check-strictly="false"
+        @check="handleCheck"
+        class="mb-4"
+      />
+    </div>
+    <template #footer>
+      <div class="flex justify-end space-x-2">
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitting"> Save </el-button>
       </div>
-      <template #footer>
-        <div class="flex justify-end space-x-2">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="handleSubmit" :loading="submitting">
-            Save
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-  </template>
+    </template>
+  </el-dialog>
+</template>
 
-  <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
-  import type { ElTree } from 'element-plus'
-  import { ElNotification } from 'element-plus'
-  import apiClient from '@/utils/apiClient'
+<script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
+import type { ElTree } from 'element-plus'
+import { ElNotification } from 'element-plus'
+import apiClient from '@/utils/apiClient'
 
-  interface Props {
-    modelValue: boolean
-    roleId?: number
+interface Props {
+  modelValue: boolean
+  roleId: number | null
+}
+
+interface TreeNode {
+  id: number
+  name: string
+  children?: TreeNode[]
+}
+
+interface CheckedInfo {
+  checkedKeys: number[]
+  checkedNodes: TreeNode[]
+  halfCheckedKeys: number[]
+  halfCheckedNodes: TreeNode[]
+}
+
+interface MenuItem {
+  id: number
+  name: string
+  children?: MenuItem[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: false,
+  roleId: undefined,
+})
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'success'): void
+}>()
+
+const dialogVisible = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
+})
+
+const treeRef = ref<InstanceType<typeof ElTree>>()
+const menuTree = ref<MenuItem[]>([])
+const selectedMenus = ref<number[]>([])
+const submitting = ref(false)
+
+const defaultProps = {
+  children: 'children',
+  label: 'name',
+}
+
+const handleCheck = (node: TreeNode, checkedInfo: CheckedInfo) => {
+  selectedMenus.value = checkedInfo.checkedKeys
+}
+
+// Fetch menu tree
+const fetchMenuTree = async () => {
+  try {
+    const response = await apiClient.get('/role/api/roles/menu-tree/')
+    if (response.data.code === 200) {
+      menuTree.value = response.data.data
+    }
+  } catch (error) {
+    ElNotification({
+      title: 'Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch menu tree',
+      type: 'error',
+    })
   }
+}
 
-  const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
-    roleId: undefined
-  })
+// Fetch role's current menu permissions
+const fetchRoleMenus = async () => {
+  if (!props.roleId) return
 
-  const emit = defineEmits<{
-    (e: 'update:modelValue', value: boolean): void
-    (e: 'success'): void
-  }>()
-
-  const dialogVisible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value)
-  })
-
-  const treeRef = ref<InstanceType<typeof ElTree>>()
-  const menuTree = ref([])
-  const selectedMenus = ref<number[]>([])
-  const submitting = ref(false)
-
-  const defaultProps = {
-    children: 'children',
-    label: 'name'
+  try {
+    const response = await apiClient.get(`/role/api/roles/${props.roleId}/menus/`)
+    if (response.data.code === 200) {
+      selectedMenus.value = response.data.data.menu_ids
+    }
+  } catch (error) {
+    ElNotification({
+      title: 'Error',
+      message: error instanceof Error ? error.message : 'Failed to fetch role permissions',
+      type: 'error',
+    })
   }
+}
 
-  const handleCheck = (node: any, {checkedKeys}: any) => {
-    selectedMenus.value = checkedKeys
-  }
+const handleSubmit = async () => {
+  if (!props.roleId || !treeRef.value) return
 
-  // Fetch menu tree
-  const fetchMenuTree = async () => {
-    try {
-      const response = await apiClient.get('/role/api/roles/menu-tree/')
-      if (response.data.code === 200) {
-        menuTree.value = response.data.data
-      }
-    } catch (error) {
+  submitting.value = true
+
+  try {
+    const checkedKeys = treeRef.value.getCheckedKeys() as number[]
+    // const halfCheckedKeys = treeRef.value.getHalfCheckedKeys() as number[]
+    // const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys]
+    const allSelectedKeys = checkedKeys
+
+    const response = await apiClient.put(`/role/api/roles/${props.roleId}/menus/`, {
+      menu_ids: allSelectedKeys,
+    })
+
+    if (response.data.code === 200) {
       ElNotification({
-        title: 'Error',
-        message: 'Failed to fetch menu tree',
-        type: 'error'
+        title: 'Success',
+        message: 'Role permissions updated successfully',
+        type: 'success',
       })
+      emit('success')
+      dialogVisible.value = false
     }
+  } catch (error) {
+    ElNotification({
+      title: 'Error',
+      message: error instanceof Error ? error.message : 'Failed to update role permissions',
+      type: 'error',
+    })
+  } finally {
+    submitting.value = false
   }
+}
 
-  // Fetch role's current menu permissions
-  const fetchRoleMenus = async () => {
-    if (!props.roleId) return
+const handleClose = () => {
+  selectedMenus.value = []
+}
 
-    try {
-      const response = await apiClient.get(`/role/api/roles/${props.roleId}/menus/`)
-      if (response.data.code === 200) {
-        selectedMenus.value = response.data.data.menu_ids
-      }
-    } catch (error) {
-      ElNotification({
-        title: 'Error',
-        message: 'Failed to fetch role permissions',
-        type: 'error'
-      })
-    }
+onMounted(() => {
+  // Fetch data when dialog opens
+  if (dialogVisible.value) {
+    fetchMenuTree()
+    fetchRoleMenus()
   }
+})
 
-  const handleSubmit = async () => {
-    if (!props.roleId || !treeRef.value) return
-
-    submitting.value = true
-
-    try {
-      const checkedKeys = treeRef.value.getCheckedKeys() as number[]
-      // const halfCheckedKeys = treeRef.value.getHalfCheckedKeys() as number[]
-      // const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys]
-      const allSelectedKeys = checkedKeys
-
-      const response = await apiClient.put(`/role/api/roles/${props.roleId}/menus/`, {
-        menu_ids: allSelectedKeys
-      })
-
-      if (response.data.code === 200) {
-        ElNotification({
-          title: 'Success',
-          message: 'Role permissions updated successfully',
-          type: 'success'
-        })
-        emit('success')
-        dialogVisible.value = false
-      }
-    } catch (error) {
-      ElNotification({
-        title: 'Error',
-        message: 'Failed to update role permissions',
-        type: 'error'
-      })
-    } finally {
-      submitting.value = false
-    }
-  }
-
-  const handleClose = () => {
-    selectedMenus.value = []
-  }
-
-  onMounted(() => {
-    // Fetch data when dialog opens
-    if (dialogVisible.value) {
-      fetchMenuTree()
-      fetchRoleMenus()
-    }
-  })
-
-  // Watch for dialog visibility changes
-  watch(() => dialogVisible.value, (newVal) => {
+// Watch for dialog visibility changes
+watch(
+  () => dialogVisible.value,
+  (newVal) => {
     if (newVal) {
       fetchMenuTree()
       fetchRoleMenus()
     }
-  })
-  </script>
+  },
+)
+</script>

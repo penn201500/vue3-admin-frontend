@@ -336,7 +336,7 @@ const roleFormRef = ref<FormInstance>()
 const showMenuDialog = ref(false)
 const selectedRoleId = ref<number | null>(null)
 const handleMenuPermissions = (role: Role) => {
-  selectedRoleId.value = role.id
+  selectedRoleId.value = role.id as number
   showMenuDialog.value = true
 }
 
