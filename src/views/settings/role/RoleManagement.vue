@@ -202,33 +202,39 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex justify-end gap-2 pt-2 border-t dark:border-gray-700">
+            <div class="flex justify-between gap-2 pt-2 border-t dark:border-gray-700">
               <el-tooltip
                 v-if="role.is_system"
                 content="System roles cannot be modified"
                 placement="top"
               >
-                <div class="flex gap-2">
+                <div class="flex gap-1">
                   <el-button type="warning" size="small" disabled>
-                    <el-icon class="mr-1"><Menu /></el-icon>Permissions
+                    <el-icon><Menu /></el-icon>
+                    <span class="hidden sm:inline-flex ml-1">Permissions</span>
                   </el-button>
                   <el-button type="primary" size="small" disabled>
-                    <el-icon class="mr-1"><Edit /></el-icon>Edit
+                    <el-icon><Edit /></el-icon>
+                    <span class="hidden sm:inline-flex ml-1">Edit</span>
                   </el-button>
                   <el-button type="danger" size="small" disabled>
-                    <el-icon class="mr-1"><Delete /></el-icon>Delete
+                    <el-icon><Delete /></el-icon>
+                    <span class="hidden sm:inline-flex ml-1">Delete</span>
                   </el-button>
                 </div>
               </el-tooltip>
               <template v-else>
                 <el-button type="warning" size="small" @click="handleMenuPermissions(role)">
-                  <el-icon class="mr-1"><Menu /></el-icon>Permissions
+                  <el-icon><Menu /></el-icon>
+                  <span class="hidden sm:inline-flex ml-1">Permissions</span>
                 </el-button>
                 <el-button type="primary" size="small" @click="handleEdit(role)">
-                  <el-icon class="mr-1"><Edit /></el-icon>Edit
+                  <el-icon><Edit /></el-icon>
+                  <span class="hidden sm:inline-flex ml-1">Edit</span>
                 </el-button>
                 <el-button type="danger" size="small" @click="handleDelete(role)">
-                  <el-icon class="mr-1"><Delete /></el-icon>Delete
+                  <el-icon><Delete /></el-icon>
+                  <span class="hidden sm:inline-flex ml-1">Delete</span>
                 </el-button>
               </template>
             </div>
