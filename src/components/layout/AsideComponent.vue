@@ -158,8 +158,14 @@ const handleResize = () => {
 onMounted(async () => {
   window.addEventListener('resize', handleResize)
   handleResize()
-  // Fetch menus for current user
-  await authStore.fetchUserMenus()
+  // Only fetch menus if we don't have valid menus already
+  const hasValidMenus =
+    authStore.userMenus.length > 0 &&
+    authStore.userMenus.every((menu) => menu.id && menu.name && menu.path)
+
+  if (!hasValidMenus) {
+    await authStore.fetchUserMenus()
+  }
 })
 
 onBeforeUnmount(() => {

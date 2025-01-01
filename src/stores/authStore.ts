@@ -15,8 +15,22 @@ function saveMenusToSessionStorage(menus: MenuItem[]) {
 }
 
 function loadMenusFromSessionStorage(): MenuItem[] {
-  const storedMenus = sessionStorage.getItem('userMenus')
-  return storedMenus ? JSON.parse(storedMenus) : []
+  try {
+    const storedMenus = sessionStorage.getItem('userMenus')
+    if (!storedMenus) return []
+
+    const parsedMenus = JSON.parse(storedMenus)
+    if (!Array.isArray(parsedMenus)) return []
+
+    // Validate menu structure
+    const isValidMenu =
+      parsedMenus.length > 0 && parsedMenus.every((menu) => menu?.id && menu?.name && menu?.path)
+
+    return isValidMenu ? parsedMenus : []
+  } catch (e) {
+    console.error('Error loading menus from sessionStorage:', e)
+    return []
+  }
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -86,8 +100,20 @@ export const useAuthStore = defineStore('auth', {
       this.rateLimit = false // Reset rate limit flag
     },
 
-    async fetchUserMenus(userId?: number) {
+    async fetchUserMenus(userId?: number, force: boolean = false) {
+      // Check for valid existing menus
+      const hasValidMenus =
+        this.userMenus.length > 0 &&
+        this.userMenus.every((menu) => menu.id && menu.name && menu.path)
+
+      // If menus already exist and not forced, skip fetch
+      if (hasValidMenus && !force) {
+        console.log('Using cached menus')
+        return true
+      }
+
       try {
+        console.log('Fetching fresh menus')
         const url = userId ? `/menu/api/users/${userId}/menus/` : '/menu/api/user-menus/'
         const response = await apiClient.get(url)
         if (response.data.code === 200) {
@@ -115,9 +141,9 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.code === 200) {
           const { user, access } = response.data
           this.setUser(user, access, rememberMe)
+          await this.fetchUserMenus() // Fetch menus after login
           showNotification('Success', 'Login successful!', 'success')
           router.push('/')
-          await this.fetchUserMenus() // Fetch menus after login
         }
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
