@@ -86,6 +86,7 @@ const componentMap: Record<string, () => Promise<{ default: Component }>> = {
   'settings/user/index': () => import('@/views/settings/user/UserManagement.vue'),
   'settings/role/index': () => import('@/views/settings/role/RoleManagement.vue'),
   'settings/menu/index': () => import('@/views/settings/menu/MenuManagement.vue'),
+  'settings/audit/auditLog': () => import('@/views/settings/audit/AuditLog.vue'),
   'profile': () => import('@/views/ProfileView.vue'),
   'ProfileView': () => import('@/views/ProfileView.vue'),
   'userProfile': () => import('@/views/ProfileView.vue'),
