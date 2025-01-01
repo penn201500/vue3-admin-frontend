@@ -115,7 +115,7 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.code === 200) {
           const { user, access } = response.data
           this.setUser(user, access, rememberMe)
-          showNotification('Success', 'Login successful!', 'success')
+          showNotification('Success', 'Login successful', 'success')
           router.push('/')
           await this.fetchUserMenus() // Fetch menus after login
         }

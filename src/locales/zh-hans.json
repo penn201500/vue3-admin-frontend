@@ -30,7 +30,9 @@
     "logout": "退出",
     "username": "用户名",
     "password": "密码",
-    "email": "邮箱"
+    "email": "邮箱",
+    "welcomeBack": "欢迎回来！",
+    "signUp": "没有账号？注册"
   },
   "user": {
     "management": "用户管理",
@@ -69,27 +71,12 @@
   },
   "notifications": {
     "success": {
-      "title": "成功",
-      "menuDeleted": "菜单删除成功",
-      "menuCreated": "菜单创建成功",
-      "menuUpdated": "菜单更新成功",
-      "userDeleted": "用户删除成功",
-      "roleDeleted": "角色删除成功",
-      "profileUpdated": "个人信息更新成功",
-      "passwordUpdated": "密码更新成功",
-      "loginSuccess": "登录成功",
-      "logoutSuccess": "退出成功"
+      "Success": "成功",
+      "Login successful": "登录成功！",
+      "Logged out successfully": "退出成功"
     },
     "error": {
-      "title": "错误",
-      "menuDelete": "删除菜单失败",
-      "userDelete": "删除用户失败",
-      "roleDelete": "删除角色失败",
-      "invalidData": "无效数据",
-      "unauthorized": "未授权访问",
-      "loginFailed": "登录失败",
-      "networkError": "网络错误",
-      "serverError": "服务器错误"
+      "rateLimitExceeded": "请求过于频繁，请稍后再试。"
     },
     "warning": {
       "title": "警告",

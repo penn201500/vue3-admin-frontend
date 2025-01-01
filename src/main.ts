@@ -3,14 +3,13 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 import ElementPlus from 'element-plus'
 import './assets/tailwind.css'
 import './types/axios'
+import { i18n } from './i18n'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-
-import { i18n } from './i18n'
 
 const app = createApp(App)
 const pinia = createPinia()

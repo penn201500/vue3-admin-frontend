@@ -30,7 +30,9 @@
     "logout": "Logout",
     "username": "Username",
     "password": "Password",
-    "email": "Email"
+    "email": "Email",
+    "welcomeBack": "Welcome back!",
+    "signUp": "Don't have an account? Sign up"
   },
   "user": {
     "management": "User Management",
@@ -69,27 +71,13 @@
   },
   "notifications": {
     "success": {
-      "title": "Success",
-      "menuDeleted": "Menu deleted successfully",
-      "menuCreated": "Menu created successfully",
-      "menuUpdated": "Menu updated successfully",
-      "userDeleted": "User deleted successfully",
-      "roleDeleted": "Role deleted successfully",
-      "profileUpdated": "Profile updated successfully",
-      "passwordUpdated": "Password updated successfully",
-      "loginSuccess": "Login successful",
-      "logoutSuccess": "Logged out successfully"
+      "Success": "Success",
+      "Login successful": "Login successful",
+      "Logged out successfully": "Logged out successfully"
     },
     "error": {
-      "title": "Error",
-      "menuDelete": "Failed to delete menu",
-      "userDelete": "Failed to delete user",
-      "roleDelete": "Failed to delete role",
-      "invalidData": "Invalid data",
-      "unauthorized": "Unauthorized access",
-      "loginFailed": "Login failed",
-      "networkError": "Network error",
-      "serverError": "Server error"
+      "Rate Limit Exceeded": "Rate Limit Exceeded",
+      "Too many requests, please try again later.": "Too many requests, please try again later."
     },
     "warning": {
       "title": "Warning",

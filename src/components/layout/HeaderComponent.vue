@@ -24,6 +24,8 @@
 
       <!-- Right Section -->
       <div class="flex items-center gap-3">
+        <!-- Language Switch -->
+        <LanguageSwitcher />
         <!-- Theme Switch -->
         <el-switch
           v-model="isDarkMode"
@@ -108,6 +110,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTabStore } from '@/stores/tabStore'
 import { useRouter } from 'vue-router'
 import { useIsCollapsedStore } from '@/stores/isCollapsedStore'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const homeLayoutStore = useIsCollapsedStore()
 const authStore = useAuthStore()

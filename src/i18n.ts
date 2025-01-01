@@ -1,21 +1,13 @@
-import { createI18n } from 'vue-i18n';
-
-const messages = {
-  en: {
-    message: {
-      hello: 'Hello World',
-    },
-  },
-  'zh-hans': {
-    message: {
-      hello: '你好，世界',
-    },
-  },
-};
+import { createI18n } from 'vue-i18n'
+import en from './locales/en.json'
+import zhHans from './locales/zh-hans.json'
 
 export const i18n = createI18n({
   legacy: false,
-  locale: 'en', // Set default locale
+  locale: localStorage.getItem('language') || 'en',
   fallbackLocale: 'en',
-  messages,
-});
+  messages: {
+    en,
+    'zh-hans': zhHans
+  }
+})

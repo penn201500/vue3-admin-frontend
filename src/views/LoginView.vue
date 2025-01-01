@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
@@ -9,6 +11,8 @@ import { required, minLength, maxLength } from '@vuelidate/validators'
 import { ElNotification } from 'element-plus'
 import DOMPurify from 'dompurify'
 import { useUIStore } from '@/stores/ui'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -104,7 +108,7 @@ onUnmounted(() => {
       <!-- Logo Section -->
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">VueSys</h1>
-        <p class="mt-2 text-gray-600 dark:text-gray-400">Welcome back!</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('auth.welcomeBack') }}</p>
       </div>
 
       <!-- Login Card -->
@@ -181,7 +185,7 @@ onUnmounted(() => {
                 to="/signup"
                 class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
               >
-                Don't have an account? Sign up
+                {{ t('auth.signUp') }}
               </router-link>
             </div>
           </form>

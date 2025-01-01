@@ -64,6 +64,11 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 // Add a request interceptor to include CSRF token
 apiClient.interceptors.request.use(
   (config) => {
+    const currentLang = localStorage.getItem('language') || 'en'
+
+    // Update baseURL with current language
+    config.baseURL = `${backendURL}/${currentLang}/`
+
     // Skip adding auth header for token refresh requests
     if (config._retry) {
       return config
