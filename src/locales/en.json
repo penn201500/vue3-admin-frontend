@@ -1,0 +1,104 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "search": "Search",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "success": "Success",
+    "error": "Error",
+    "actions": "Actions",
+    "status": "Status",
+    "comment": "Comment",
+    "created": "Created",
+    "updated": "Updated",
+    "active": "Active",
+    "inactive": "Inactive",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "loading": "Loading...",
+    "noData": "No data available"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "email": "Email"
+  },
+  "user": {
+    "management": "User Management",
+    "username": "Username",
+    "email": "Email",
+    "phone": "Phone",
+    "roles": "Roles",
+    "lastLogin": "Last Login",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User",
+    "avatar": "Avatar",
+    "uploadAvatar": "Upload Avatar"
+  },
+  "role": {
+    "management": "Role Management",
+    "name": "Role Name",
+    "code": "Role Code",
+    "permissions": "Permissions",
+    "addRole": "Add Role",
+    "editRole": "Edit Role",
+    "deleteRole": "Delete Role",
+    "systemRole": "System Role"
+  },
+  "menu": {
+    "management": "Menu Management",
+    "name": "Menu Name",
+    "icon": "Icon",
+    "path": "Router Path",
+    "component": "Component Path",
+    "order": "Order",
+    "parent": "Parent Menu",
+    "addMenu": "Add Menu",
+    "editMenu": "Edit Menu",
+    "deleteMenu": "Delete Menu"
+  },
+  "notifications": {
+    "success": {
+      "title": "Success",
+      "menuDeleted": "Menu deleted successfully",
+      "menuCreated": "Menu created successfully",
+      "menuUpdated": "Menu updated successfully",
+      "userDeleted": "User deleted successfully",
+      "roleDeleted": "Role deleted successfully",
+      "profileUpdated": "Profile updated successfully",
+      "passwordUpdated": "Password updated successfully",
+      "loginSuccess": "Login successful",
+      "logoutSuccess": "Logged out successfully"
+    },
+    "error": {
+      "title": "Error",
+      "menuDelete": "Failed to delete menu",
+      "userDelete": "Failed to delete user",
+      "roleDelete": "Failed to delete role",
+      "invalidData": "Invalid data",
+      "unauthorized": "Unauthorized access",
+      "loginFailed": "Login failed",
+      "networkError": "Network error",
+      "serverError": "Server error"
+    },
+    "warning": {
+      "title": "Warning",
+      "confirmDelete": "Are you sure you want to delete this item?",
+      "unsavedChanges": "You have unsaved changes"
+    },
+    "info": {
+      "title": "Information",
+      "sessionExpired": "Session expired"
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "common": {
+    "dashboard": "仪表盘",
+    "profile": "个人信息",
+    "settings": "设置",
+    "logout": "退出",
+    "search": "搜索",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "edit": "编辑",
+    "delete": "删除",
+    "success": "成功",
+    "error": "错误",
+    "actions": "操作",
+    "status": "状态",
+    "comment": "备注",
+    "created": "创建时间",
+    "updated": "更新时间",
+    "active": "启用",
+    "inactive": "禁用",
+    "enabled": "启用",
+    "disabled": "禁用",
+    "loading": "加载中...",
+    "noData": "暂无数据"
+  },
+  "auth": {
+    "login": "登录",
+    "signup": "注册",
+    "logout": "退出",
+    "username": "用户名",
+    "password": "密码",
+    "email": "邮箱"
+  },
+  "user": {
+    "management": "用户管理",
+    "username": "用户名",
+    "email": "邮箱",
+    "phone": "电话",
+    "roles": "角色",
+    "lastLogin": "最后登录",
+    "addUser": "添加用户",
+    "editUser": "编辑用户",
+    "deleteUser": "删除用户",
+    "avatar": "头像",
+    "uploadAvatar": "上传头像"
+  },
+  "role": {
+    "management": "角色管理",
+    "name": "角色名称",
+    "code": "角色代码",
+    "permissions": "权限",
+    "addRole": "添加角色",
+    "editRole": "编辑角色",
+    "deleteRole": "删除角色",
+    "systemRole": "系统角色"
+  },
+  "menu": {
+    "management": "菜单管理",
+    "name": "菜单名称",
+    "icon": "图标",
+    "path": "路由路径",
+    "component": "组件路径",
+    "order": "排序",
+    "parent": "父级菜单",
+    "addMenu": "添加菜单",
+    "editMenu": "编辑菜单",
+    "deleteMenu": "删除菜单"
+  },
+  "notifications": {
+    "success": {
+      "title": "成功",
+      "menuDeleted": "菜单删除成功",
+      "menuCreated": "菜单创建成功",
+      "menuUpdated": "菜单更新成功",
+      "userDeleted": "用户删除成功",
+      "roleDeleted": "角色删除成功",
+      "profileUpdated": "个人信息更新成功",
+      "passwordUpdated": "密码更新成功",
+      "loginSuccess": "登录成功",
+      "logoutSuccess": "退出成功"
+    },
+    "error": {
+      "title": "错误",
+      "menuDelete": "删除菜单失败",
+      "userDelete": "删除用户失败",
+      "roleDelete": "删除角色失败",
+      "invalidData": "无效数据",
+      "unauthorized": "未授权访问",
+      "loginFailed": "登录失败",
+      "networkError": "网络错误",
+      "serverError": "服务器错误"
+    },
+    "warning": {
+      "title": "警告",
+      "confirmDelete": "确定要删除此项吗？",
+      "unsavedChanges": "有未保存的更改"
+    },
+    "info": {
+      "title": "提示",
+      "sessionExpired": "会话已过期"
+    }
+  }
+}
