@@ -49,7 +49,7 @@
                 :size="'default'"
                 :shortcuts="dateShortcuts"
                 class="!w-[180px]"
-                value-format="YYYY-MM-DD"
+                value-format="yyyy-MM-dd"
               />
               <el-time-picker
                 v-model="startTime"
@@ -70,7 +70,7 @@
                 placeholder="End date"
                 :size="'default'"
                 class="!w-[180px]"
-                value-format="YYYY-MM-DD"
+                value-format="yyyy-MM-dd"
               />
               <el-time-picker
                 v-model="endTime"
@@ -94,7 +94,7 @@
                 placeholder="Start date"
                 :size="'default'"
                 class="flex-1"
-                value-format="YYYY-MM-DD"
+                value-format="yyyy-MM-dd"
               />
               <el-time-picker
                 v-model="startTime"
@@ -113,7 +113,7 @@
                 placeholder="End date"
                 :size="'default'"
                 class="flex-1"
-                value-format="YYYY-MM-DD"
+                value-format="yyyy-MM-dd"
               />
               <el-time-picker
                 v-model="endTime"
@@ -291,8 +291,8 @@ watch(
   [startDate, startTime, endDate, endTime],
   () => {
     if (startDate.value && startTime.value && endDate.value && endTime.value) {
-      const start = `${startDate.value} ${startTime.value}`
-      const end = `${endDate.value} ${endTime.value}`
+      const start = `${startDate.value}T${startTime.value}`
+      const end = `${endDate.value}T${endTime.value}`
       dateRange.value = [new Date(start), new Date(end)]
     } else {
       dateRange.value = null
@@ -311,9 +311,9 @@ watch(
   (newRange) => {
     if (newRange) {
       const [start, end] = newRange
-      startDate.value = formatDate(start, 'YYYY-MM-DD')
+      startDate.value = formatDate(start, 'yyyy-MM-dd')
       startTime.value = formatDate(start, 'HH:mm:ss')
-      endDate.value = formatDate(end, 'YYYY-MM-DD')
+      endDate.value = formatDate(end, 'yyyy-MM-dd')
       endTime.value = formatDate(end, 'HH:mm:ss')
     } else {
       startDate.value = null
