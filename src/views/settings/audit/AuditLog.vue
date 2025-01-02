@@ -201,13 +201,25 @@
       </div>
 
       <!-- Mobile Pagination -->
-      <div class="md:hidden flex justify-center mt-4">
+      <div class="flex md:hidden flex-col gap-2 mt-4">
+        <div class="flex justify-between items-center px-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400"> Total {{ total }} </span>
+          <el-select v-model="pageSize" :size="'default'" class="!w-24" @change="handleSizeChange">
+            <el-option
+              v-for="size in [10, 20, 30, 50, 100]"
+              :key="size"
+              :label="`${size}/page`"
+              :value="size"
+            />
+          </el-select>
+        </div>
         <el-pagination
           v-model:current-page="currentPage"
           :page-size="pageSize"
           :total="total"
           :background="true"
           layout="prev, pager, next"
+          class="!flex justify-center"
           @current-change="handleCurrentChange"
         />
       </div>
