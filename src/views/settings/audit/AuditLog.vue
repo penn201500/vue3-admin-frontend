@@ -38,88 +38,34 @@
         </el-select>
 
         <!-- Date Range Picker - Desktop -->
-        <div class="hidden md:block">
-          <div class="flex items-center gap-2">
-            <!-- Start Date & Time -->
-            <div class="flex gap-2">
-              <el-date-picker
-                v-model="dateRange"
-                type="date"
-                placeholder="Start date"
-                :size="'default'"
-                :shortcuts="dateShortcuts"
-                class="!w-[180px]"
-                value-format="yyyy-MM-dd"
-              />
-              <el-time-picker
-                v-model="startTime"
-                placeholder="Start time"
-                :size="'default'"
-                class="!w-[130px]"
-                value-format="HH:mm:ss"
-              />
-            </div>
-
-            <span class="text-gray-400">to</span>
-
-            <!-- End Date & Time -->
-            <div class="flex gap-2">
-              <el-date-picker
-                v-model="endDate"
-                type="date"
-                placeholder="End date"
-                :size="'default'"
-                class="!w-[180px]"
-                value-format="yyyy-MM-dd"
-              />
-              <el-time-picker
-                v-model="endTime"
-                placeholder="End time"
-                :size="'default'"
-                class="!w-[130px]"
-                value-format="HH:mm:ss"
-              />
-            </div>
-          </div>
+        <div class="hidden md:flex items-center gap-2">
+          <el-date-picker
+            v-model="dateRange"
+            type="datetimerange"
+            range-separator="to"
+            start-placeholder="Start"
+            end-placeholder="End"
+            :shortcuts="dateShortcuts"
+            :unlink-panels="false"
+            @change="refreshAuditLogs"
+          />
         </div>
 
         <!-- Date Range Picker - Mobile -->
-        <div class="block md:hidden w-full">
-          <div class="flex flex-col gap-2">
-            <!-- Start Date & Time -->
-            <div class="flex gap-2">
-              <el-date-picker
-                v-model="startDate"
-                type="date"
-                placeholder="Start date"
-                :size="'default'"
-                value-format="yyyy-MM-dd"
-              />
-              <el-time-picker
-                v-model="startTime"
-                placeholder="Start time"
-                :size="'default'"
-                value-format="HH:mm:ss"
-              />
-            </div>
-
-            <!-- End Date & Time -->
-            <div class="flex gap-2">
-              <el-date-picker
-                v-model="endDate"
-                type="date"
-                placeholder="End date"
-                :size="'default'"
-                value-format="yyyy-MM-dd"
-              />
-              <el-time-picker
-                v-model="endTime"
-                placeholder="End time"
-                :size="'default'"
-                value-format="HH:mm:ss"
-              />
-            </div>
-          </div>
+        <div class="block md:hidden">
+          <el-date-picker
+            v-model="dateRange"
+            type="datetimerange"
+            popper-class="mobile-date-popper"
+            range-separator="to"
+            start-placeholder="Start"
+            end-placeholder="End"
+            :shortcuts="dateShortcuts"
+            :unlink-panels="false"
+            @change="refreshAuditLogs"
+            class="!w-full"
+            size="small"
+          />
         </div>
 
         <!-- Audit Log Table -->
@@ -259,7 +205,6 @@ import { ref, onMounted, watch } from 'vue'
 import { Search, Document } from '@element-plus/icons-vue'
 import apiClient from '@/utils/apiClient'
 import type { AuditLog } from '@/types/AuditLog'
-import { format } from 'date-fns'
 
 // Define types
 interface Filters {
@@ -276,55 +221,8 @@ interface ActionOption {
   label: string
   value: string
 }
-// For date picker
-const startDate = ref<string | null>(null)
-const startTime = ref<string | null>(null)
-const endDate = ref<string | null>(null)
-const endTime = ref<string | null>(null)
-
-// Watch for changes and combine into dateRange
-watch(
-  [startDate, startTime, endDate, endTime],
-  () => {
-    if (startDate.value && startTime.value && endDate.value && endTime.value) {
-      const start = `${startDate.value}T${startTime.value}`
-      const end = `${endDate.value}T${endTime.value}`
-      dateRange.value = [new Date(start), new Date(end)]
-    } else {
-      dateRange.value = null
-    }
-
-    refreshAuditLogs()
-  },
-  { deep: true },
-)
 
 const dateRange = ref<[Date, Date] | null>(null)
-
-// Update when dateRange changes from shortcuts
-watch(
-  dateRange,
-  (newRange) => {
-    if (newRange) {
-      const [start, end] = newRange
-      startDate.value = formatDate(start, 'yyyy-MM-dd')
-      startTime.value = formatDate(start, 'HH:mm:ss')
-      endDate.value = formatDate(end, 'yyyy-MM-dd')
-      endTime.value = formatDate(end, 'HH:mm:ss')
-    } else {
-      startDate.value = null
-      startTime.value = null
-      endDate.value = null
-      endTime.value = null
-    }
-  },
-  { deep: true },
-)
-
-// Helper function to format dates
-function formatDate(date: Date, formatStr: string) {
-  return format(date, formatStr)
-}
 
 // Date shortcuts
 const dateShortcuts = [
@@ -332,8 +230,7 @@ const dateShortcuts = [
     text: 'Last hour',
     value: () => {
       const end = new Date()
-      const start = new Date()
-      start.setHours(end.getHours() - 1)
+      const start = new Date(end.getTime() - 3600 * 1000)
       return [start, end]
     },
   },
@@ -341,8 +238,7 @@ const dateShortcuts = [
     text: 'Today',
     value: () => {
       const end = new Date()
-      const start = new Date()
-      start.setHours(0, 0, 0, 0)
+      const start = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 0, 0, 0)
       return [start, end]
     },
   },
@@ -350,8 +246,7 @@ const dateShortcuts = [
     text: 'Last 24 hours',
     value: () => {
       const end = new Date()
-      const start = new Date()
-      start.setTime(end.getTime() - 3600 * 1000 * 24)
+      const start = new Date(end.getTime() - 24 * 3600 * 1000)
       return [start, end]
     },
   },
@@ -359,8 +254,7 @@ const dateShortcuts = [
     text: 'Last 7 days',
     value: () => {
       const end = new Date()
-      const start = new Date()
-      start.setTime(end.getTime() - 3600 * 1000 * 24 * 7)
+      const start = new Date(end.getTime() - 7 * 24 * 3600 * 1000)
       return [start, end]
     },
   },
@@ -415,9 +309,10 @@ const fetchAuditLogs = async () => {
       action: filters.value.action,
     }
 
-    if (dateRange.value?.[0] && dateRange.value[1]) {
-      params.start_date = dateRange.value[0].toISOString()
-      params.end_date = dateRange.value[1].toISOString()
+    if (dateRange.value && dateRange.value?.[0] && dateRange.value[1]) {
+      const [start, end] = dateRange.value
+      params.start_date = start.toISOString()
+      params.end_date = end.toISOString()
     }
 
     const response = await apiClient.get('/api/audit/logs/', { params })
