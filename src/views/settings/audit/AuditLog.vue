@@ -93,14 +93,12 @@
                 type="date"
                 placeholder="Start date"
                 :size="'default'"
-                class="flex-1"
                 value-format="yyyy-MM-dd"
               />
               <el-time-picker
                 v-model="startTime"
                 placeholder="Start time"
                 :size="'default'"
-                class="!w-[130px]"
                 value-format="HH:mm:ss"
               />
             </div>
@@ -112,14 +110,12 @@
                 type="date"
                 placeholder="End date"
                 :size="'default'"
-                class="flex-1"
                 value-format="yyyy-MM-dd"
               />
               <el-time-picker
                 v-model="endTime"
                 placeholder="End time"
                 :size="'default'"
-                class="!w-[130px]"
                 value-format="HH:mm:ss"
               />
             </div>
