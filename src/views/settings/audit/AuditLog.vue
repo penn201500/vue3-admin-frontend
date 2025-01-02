@@ -37,85 +37,177 @@
           />
         </el-select>
 
-        <!-- Date Range Picker -->
-        <el-date-picker
-          v-model="dateRange"
-          type="daterange"
-          range-separator="to"
-          start-placeholder="Start date"
-          end-placeholder="End date"
-          class="w-auto"
-        />
+        <!-- Date Range Picker - Desktop -->
+        <div class="hidden md:block">
+          <div class="flex items-center gap-2">
+            <!-- Start Date & Time -->
+            <div class="flex gap-2">
+              <el-date-picker
+                v-model="dateRange"
+                type="date"
+                placeholder="Start date"
+                :size="'default'"
+                :shortcuts="dateShortcuts"
+                class="!w-[180px]"
+                value-format="YYYY-MM-DD"
+              />
+              <el-time-picker
+                v-model="startTime"
+                placeholder="Start time"
+                :size="'default'"
+                class="!w-[130px]"
+                value-format="HH:mm:ss"
+              />
+            </div>
+
+            <span class="text-gray-400">to</span>
+
+            <!-- End Date & Time -->
+            <div class="flex gap-2">
+              <el-date-picker
+                v-model="endDate"
+                type="date"
+                placeholder="End date"
+                :size="'default'"
+                class="!w-[180px]"
+                value-format="YYYY-MM-DD"
+              />
+              <el-time-picker
+                v-model="endTime"
+                placeholder="End time"
+                :size="'default'"
+                class="!w-[130px]"
+                value-format="HH:mm:ss"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Date Range Picker - Mobile -->
+        <div class="block md:hidden w-full">
+          <div class="flex flex-col gap-2">
+            <!-- Start Date & Time -->
+            <div class="flex gap-2">
+              <el-date-picker
+                v-model="startDate"
+                type="date"
+                placeholder="Start date"
+                :size="'default'"
+                class="flex-1"
+                value-format="YYYY-MM-DD"
+              />
+              <el-time-picker
+                v-model="startTime"
+                placeholder="Start time"
+                :size="'default'"
+                class="!w-[130px]"
+                value-format="HH:mm:ss"
+              />
+            </div>
+
+            <!-- End Date & Time -->
+            <div class="flex gap-2">
+              <el-date-picker
+                v-model="endDate"
+                type="date"
+                placeholder="End date"
+                :size="'default'"
+                class="flex-1"
+                value-format="YYYY-MM-DD"
+              />
+              <el-time-picker
+                v-model="endTime"
+                placeholder="End time"
+                :size="'default'"
+                class="!w-[130px]"
+                value-format="HH:mm:ss"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Log Table -->
+        <el-table
+          v-loading="loading"
+          :data="auditLogs"
+          :stripe="true"
+          :border="true"
+          class="w-full"
+          :header-cell-class-name="'!text-gray-700 dark:!text-gray-200 !font-semibold'"
+          :empty-text="'No Data'"
+        >
+          <el-table-column prop="username" label="User" width="120">
+            <template #default="{ row }">
+              {{ row.username || 'System' }}
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="action" label="Action" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="getActionTagType(row.action)" size="small">
+                {{ row.action }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="module" label="Module" width="150">
+            <template #default="{ row }">
+              {{ getModuleLabel(row.module) }}
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="resource_type" label="Resource Type" width="150" />
+
+          <el-table-column prop="timestamp" label="Time" width="180">
+            <template #default="{ row }">
+              {{ formatDateTime(row.timestamp) }}
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="status" label="Status" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status ? 'success' : 'danger'" size="small">
+                {{ row.status ? 'Success' : 'Failed' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="message" label="Message" min-width="200" show-overflow-tooltip />
+
+          <el-table-column fixed="right" label="Actions" width="80" align="center">
+            <template #default="{ row }">
+              <el-tooltip content="View Details" placement="top">
+                <el-button type="primary" size="small" @click="showDetails(row)">
+                  <el-icon><Document /></el-icon>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
-
-      <!-- Audit Log Table -->
-      <el-table
-        v-loading="loading"
-        :data="auditLogs"
-        :stripe="true"
-        :border="true"
-        class="w-full"
-        :header-cell-class-name="'!text-gray-700 dark:!text-gray-200 !font-semibold'"
-        :empty-text="'No Data'"
-      >
-        <el-table-column prop="username" label="User" width="120">
-          <template #default="{ row }">
-            {{ row.username || 'System' }}
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="action" label="Action" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getActionTagType(row.action)" size="small">
-              {{ row.action }}
-            </el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="module" label="Module" width="150">
-          <template #default="{ row }">
-            {{ getModuleLabel(row.module) }}
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="resource_type" label="Resource Type" width="150" />
-
-        <el-table-column prop="timestamp" label="Time" width="180">
-          <template #default="{ row }">
-            {{ formatDateTime(row.timestamp) }}
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="status" label="Status" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.status ? 'success' : 'danger'" size="small">
-              {{ row.status ? 'Success' : 'Failed' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="message" label="Message" min-width="200" show-overflow-tooltip />
-
-        <el-table-column fixed="right" label="Actions" width="80" align="center">
-          <template #default="{ row }">
-            <el-tooltip content="View Details" placement="top">
-              <el-button type="primary" size="small" @click="showDetails(row)">
-                <el-icon><Document /></el-icon>
-              </el-button>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-      </el-table>
-
       <!-- Pagination -->
-      <div class="flex justify-end mt-4">
+      <!-- Desktop Pagination -->
+      <div class="hidden md:flex justify-end mt-1">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 30, 50, 100]"
           :total="total"
-          :page-sizes="[10, 20, 50, 100]"
+          :background="true"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+
+      <!-- Mobile Pagination -->
+      <div class="md:hidden flex justify-center mt-4">
+        <el-pagination
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="total"
+          :background="true"
+          layout="prev, pager, next"
           @current-change="handleCurrentChange"
         />
       </div>
@@ -124,9 +216,8 @@
       <el-dialog
         v-model="detailsVisible"
         title="Audit Log Details"
-        width="60%"
+        class="w-[90%] sm:w-[500px] mx-auto audit-details-dialog"
         destroy-on-close
-        class="audit-details-dialog"
       >
         <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
           <div v-if="selectedDetails" class="space-y-4">
@@ -160,6 +251,7 @@ import { ref, onMounted, watch } from 'vue'
 import { Search, Document } from '@element-plus/icons-vue'
 import apiClient from '@/utils/apiClient'
 import type { AuditLog } from '@/types/AuditLog'
+import { format } from 'date-fns'
 
 // Define types
 interface Filters {
@@ -176,6 +268,95 @@ interface ActionOption {
   label: string
   value: string
 }
+// For date picker
+const startDate = ref<string | null>(null)
+const startTime = ref<string | null>(null)
+const endDate = ref<string | null>(null)
+const endTime = ref<string | null>(null)
+
+// Watch for changes and combine into dateRange
+watch(
+  [startDate, startTime, endDate, endTime],
+  () => {
+    if (startDate.value && startTime.value && endDate.value && endTime.value) {
+      const start = `${startDate.value} ${startTime.value}`
+      const end = `${endDate.value} ${endTime.value}`
+      dateRange.value = [new Date(start), new Date(end)]
+    } else {
+      dateRange.value = null
+    }
+
+    refreshAuditLogs()
+  },
+  { deep: true },
+)
+
+const dateRange = ref<[Date, Date] | null>(null)
+
+// Update when dateRange changes from shortcuts
+watch(
+  dateRange,
+  (newRange) => {
+    if (newRange) {
+      const [start, end] = newRange
+      startDate.value = formatDate(start, 'YYYY-MM-DD')
+      startTime.value = formatDate(start, 'HH:mm:ss')
+      endDate.value = formatDate(end, 'YYYY-MM-DD')
+      endTime.value = formatDate(end, 'HH:mm:ss')
+    } else {
+      startDate.value = null
+      startTime.value = null
+      endDate.value = null
+      endTime.value = null
+    }
+  },
+  { deep: true },
+)
+
+// Helper function to format dates
+function formatDate(date: Date, formatStr: string) {
+  return format(date, formatStr)
+}
+
+// Date shortcuts
+const dateShortcuts = [
+  {
+    text: 'Last hour',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(end.getHours() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: 'Today',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(0, 0, 0, 0)
+      return [start, end]
+    },
+  },
+  {
+    text: 'Last 24 hours',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24)
+      return [start, end]
+    },
+  },
+  {
+    text: 'Last 7 days',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24 * 7)
+      return [start, end]
+    },
+  },
+]
 
 // Define component data
 const moduleOptions: ModuleOption[] = [
@@ -196,7 +377,6 @@ const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const searchQuery = ref('')
-const dateRange = ref<[Date, Date] | null>(null)
 const filters = ref<Filters>({
   module: '',
   action: '',
