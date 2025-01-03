@@ -4,7 +4,7 @@ import { watch } from 'vue'
 import { getActivePinia } from 'pinia'
 import { useAuthStore } from '@/stores/authStore'
 
-const backendURL = import.meta.env.VITE_APP_BACKEND_URL || 'https://localhost:8000'
+const backendURL = import.meta.env.VITE_APP_BACKEND_URL || 'https://localhost:8000/api'
 
 // Create an Axios instance
 const apiClient = axios.create({

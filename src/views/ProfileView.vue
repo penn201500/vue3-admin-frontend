@@ -576,7 +576,7 @@ const canSaveRoles = computed(() => {
 })
 const fetchAvailableRoles = async () => {
   try {
-    const response = await apiClient.get('/role/api/roles/')
+    const response = await apiClient.get('/api/role/roles/')
     if (response.data.code === 200) {
       availableRoles.value = response.data.data
       // Initialize selected roles from profileData
@@ -615,8 +615,8 @@ const onRolesSave = async () => {
   isRolesSaving.value = true
   try {
     const url = isAdminEditing.value
-      ? `/user/api/users/${props.userId}/roles/`
-      : '/user/api/profile/roles/'
+      ? `/api/user/users/${props.userId}/roles/`
+      : '/api/user/profile/roles/'
     const response = await apiClient.post(url, {
       roles: selectedRoles.value, // Can now be empty array
     })
@@ -816,7 +816,7 @@ const avatarUrl = ref<string>('')
 
 const fetchAvatar = async () => {
   try {
-    const response = await apiClient.get('/user/api/profile/get-avatar/', {
+    const response = await apiClient.get('/api/user/profile/get-avatar/', {
       params: { user_id: isAdminEditing.value ? props.userId : undefined },
       signal: controller.signal,
     })
@@ -843,7 +843,7 @@ const fetchAvatar = async () => {
 const fetchUserProfile = async () => {
   try {
     // Determine if we're editing another user or viewing own profile
-    const url = isAdminEditing.value ? `/user/api/users/${props.userId}/` : '/user/api/user-info/'
+    const url = isAdminEditing.value ? `/api/user/users/${props.userId}/` : '/api/user/user-info/'
     const response = await apiClient.get(url, {
       signal: controller.signal,
     })
@@ -902,7 +902,7 @@ onMounted(async () => {
   if (!isAuthLoaded.value) {
     try {
       // Fetch current user info to ensure roles are loaded
-      const response = await apiClient.get('/user/api/user-info/')
+      const response = await apiClient.get('/api/user/user-info/')
       if (response.data.code === 200) {
         authStore.setUser(response.data.data, authStore.accessToken as string, authStore.rememberMe)
       }
@@ -969,8 +969,8 @@ const onAvatarChange = async (uploadFile: UploadFile): Promise<void> => {
     }
 
     const url = isAdminEditing.value
-      ? `/user/api/users/${props.userId}/avatar/`
-      : '/user/api/profile/avatar/'
+      ? `/api/user/users/${props.userId}/avatar/`
+      : '/api/user/profile/avatar/'
 
     // Use apiClient instead of fetch
     const response = await apiClient.post(url, formData, {
@@ -1026,8 +1026,8 @@ const onProfileSubmit = async (): Promise<void> => {
       isLoading.value = true
       try {
         const url = isAdminEditing.value
-          ? `/user/api/users/${props.userId}/update/`
-          : '/user/api/profile/update/'
+          ? `/api/user/users/${props.userId}/update/`
+          : '/api/user/profile/update/'
         const response = await apiClient.patch(url, {
           email: profileForm.email,
           phone: profileForm.phone,
@@ -1112,8 +1112,8 @@ const onPasswordSubmit = async (): Promise<void> => {
       isPasswordLoading.value = true
       try {
         const url = isAdminEditing.value
-          ? `/user/api/users/${props.userId}/password/`
-          : '/user/api/profile/password/'
+          ? `/api/user/users/${props.userId}/password/`
+          : '/api/user/profile/password/'
         const response = await apiClient.post(url, {
           current_password: passwordForm.currentPassword,
           new_password: passwordForm.newPassword,

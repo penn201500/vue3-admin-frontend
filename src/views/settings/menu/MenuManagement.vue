@@ -247,7 +247,7 @@ const fetchMenus = async () => {
       pageSize: pageSize.value,
     }
 
-    const response = await apiClient.get('/menu/api/menus/', { params })
+    const response = await apiClient.get('/api/menu/menus/', { params })
 
     if (response.data.code === 200) {
       menus.value = response.data.data
@@ -266,8 +266,8 @@ const handleSubmit = async (formData: Partial<MenuItem>) => {
   try {
     const method = currentMenu.value ? 'put' : 'post'
     const url = currentMenu.value
-      ? `/menu/api/menus/${currentMenu.value.id}/`
-      : '/menu/api/menus/create/'
+      ? `/api/menu/menus/${currentMenu.value.id}/`
+      : '/api/menu/menus/create/'
 
     const response = await apiClient[method](url, formData)
 
@@ -297,7 +297,7 @@ const handleSubmit = async (formData: Partial<MenuItem>) => {
 const handleDelete = async (menu: MenuItem) => {
   try {
     loading.value = true
-    const response = await apiClient.delete(`/menu/api/menus/${menu.id}/`)
+    const response = await apiClient.delete(`/api/menu/menus/${menu.id}/`)
 
     if (response.data.code === 200) {
       // ElMessage.success('Menu deleted successfully')

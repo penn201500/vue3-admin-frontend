@@ -439,7 +439,7 @@ const fetchRoles = async () => {
       params.search = searchQuery.value
     }
 
-    const response = await apiClient.get('/role/api/roles/', { params })
+    const response = await apiClient.get('/api/role/roles/', { params })
     if (response.data.code === 200) {
       roles.value = response.data.data
       total.value = response.data.count || 0
@@ -512,7 +512,7 @@ const handleSubmit = async () => {
     if (valid) {
       submitting.value = true
       try {
-        const url = isEditing.value ? `/role/api/roles/${roleForm.value.id}/` : '/role/api/roles/'
+        const url = isEditing.value ? `/api/role/roles/${roleForm.value.id}/` : '/api/role/roles/'
         const method = isEditing.value ? 'put' : 'post'
 
         const response = await apiClient[method](url, roleForm.value)
@@ -553,7 +553,7 @@ const handleDelete = async (role: Role) => {
       },
     )
 
-    const response = await apiClient.delete(`/role/api/roles/${role.id}/`)
+    const response = await apiClient.delete(`/api/role/roles/${role.id}/`)
     if (response.data.code === 200) {
       // ElMessage.success('Role deleted successfully')
       ElNotification({

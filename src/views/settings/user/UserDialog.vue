@@ -155,7 +155,7 @@
         const rolesResponse = await apiClient.get<{
           code: number
           data: Role[]
-        }>('/role/api/roles/')
+        }>('/api/role/roles/')
 
         const commonRole = rolesResponse.data.data.find((role) => role.code === 'common')
 
@@ -163,7 +163,7 @@
           throw new Error('Common role not found')
         }
 
-        const response = await apiClient.post('/user/api/users/', {
+        const response = await apiClient.post('/api/user/users/', {
           ...form.value,
           role_ids: [commonRole.id]
         })

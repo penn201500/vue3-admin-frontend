@@ -68,7 +68,7 @@ async function signup() {
   loading.value = true
 
   try {
-    const response = await apiClient.post('user/api/signup/', {
+    const response = await apiClient.post('/api/user/signup/', {
       username: form.username,
       email: form.email,
       password: form.password,

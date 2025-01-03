@@ -90,7 +90,7 @@ const handleCheck = (node: TreeNode, checkedInfo: CheckedInfo) => {
 // Fetch menu tree
 const fetchMenuTree = async () => {
   try {
-    const response = await apiClient.get('/role/api/roles/menu-tree/')
+    const response = await apiClient.get('/api/role/roles/menu-tree/')
     if (response.data.code === 200) {
       menuTree.value = response.data.data
     }
@@ -108,7 +108,7 @@ const fetchRoleMenus = async () => {
   if (!props.roleId) return
 
   try {
-    const response = await apiClient.get(`/role/api/roles/${props.roleId}/menus/`)
+    const response = await apiClient.get(`/api/role/roles/${props.roleId}/menus/`)
     if (response.data.code === 200) {
       selectedMenus.value = response.data.data.menu_ids
     }
@@ -132,7 +132,7 @@ const handleSubmit = async () => {
     // const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys]
     const allSelectedKeys = checkedKeys
 
-    const response = await apiClient.put(`/role/api/roles/${props.roleId}/menus/`, {
+    const response = await apiClient.put(`/api/role/roles/${props.roleId}/menus/`, {
       menu_ids: allSelectedKeys,
     })
 

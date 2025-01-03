@@ -114,7 +114,7 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         console.log('Fetching fresh menus')
-        const url = userId ? `/menu/api/users/${userId}/menus/` : '/menu/api/user-menus/'
+        const url = userId ? `/api/menu/users/${userId}/menus/` : '/api/menu/user-menus/'
         const response = await apiClient.get(url)
         if (response.data.code === 200) {
           this.userMenus = response.data.data
@@ -132,7 +132,7 @@ export const useAuthStore = defineStore('auth', {
     async login(username: string, password: string, rememberMe: boolean) {
       this.loading = true
       try {
-        const response = await apiClient.post('/user/api/login/', {
+        const response = await apiClient.post('/api/user/login/', {
           username,
           password,
           rememberMe,
@@ -162,7 +162,7 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.loading = true
       try {
-        const response = await apiClient.post('/user/api/logout/')
+        const response = await apiClient.post('/api/user/logout/')
         if (response.data.code === 200) {
           showNotification('Success', 'Logged out successfully', 'success')
         } else {
@@ -187,7 +187,7 @@ export const useAuthStore = defineStore('auth', {
     async refreshAccessToken() {
       try {
         const response = await apiClient.post(
-          '/user/api/token/refresh/',
+          '/api/user/token/refresh/',
           {},
           {
             withCredentials: true,
@@ -236,7 +236,7 @@ export const useAuthStore = defineStore('auth', {
     // User Information
     async fetchUserInfo() {
       try {
-        const response = await apiClient.get('/user/api/user-info/')
+        const response = await apiClient.get('/api/user/user-info/')
         if (response.data.code === 200) {
           this.setUser(response.data.data, this.accessToken as string, this.rememberMe)
           this.rateLimit = false // Reset rate limit flag on success
@@ -278,7 +278,7 @@ export const useAuthStore = defineStore('auth', {
       if (this.isLoggedIn) {
         if (!this.csrfInitialized) {
           try {
-            await apiClient.get('/user/api/csrf/')
+            await apiClient.get('/api/user/csrf/')
             this.csrfInitialized = true
           } catch (error: unknown) {
             if (axios.isAxiosError(error)) {

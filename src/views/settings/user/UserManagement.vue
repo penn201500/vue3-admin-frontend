@@ -433,7 +433,7 @@ const handleDelete = async (user: User) => {
     )
 
     // Make API call to delete user
-    const response = await apiClient.delete(`/user/api/users/${user.id}/`)
+    const response = await apiClient.delete(`/api/user/users/${user.id}/`)
 
     if (response.data.code === 200) {
       // Remove all profile tabs related to this user
@@ -508,7 +508,7 @@ const formatDateTime = (date: string | null): string => {
 
 const fetchUserAvatar = async (userId: number) => {
   try {
-    const response = await apiClient.get('/user/api/profile/get-avatar/', {
+    const response = await apiClient.get('/api/user/profile/get-avatar/', {
       params: { user_id: userId },
       signal: controller.signal,
     })
@@ -554,7 +554,7 @@ const fetchUsers = async () => {
     // Add show_deleted parameter
     params.show_deleted = showDeleted.value
 
-    const response = await apiClient.get('/user/api/users/', {
+    const response = await apiClient.get('/api/user/users/', {
       params,
       signal: controller.signal,
     })
