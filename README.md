@@ -3,6 +3,7 @@
 ## Overview
 
 VueSys is a modern, responsive admin dashboard built with Vue 3, offering a comprehensive set of features for user management, role-based access control, and dynamic menu management.
+Backend: [VueSys - Admin Dashboard Backend](https://github.com/penn201500/vuesys-django-admin-backend)
 
 ## Features
 
