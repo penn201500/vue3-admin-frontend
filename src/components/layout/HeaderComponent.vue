@@ -71,12 +71,12 @@
                   <span>Profile</span>
                 </div>
               </el-dropdown-item>
-              <el-dropdown-item command="Settings" class="!text-gray-700 dark:!text-gray-300">
+              <!-- <el-dropdown-item command="Settings" class="!text-gray-700 dark:!text-gray-300">    // TODO: Uncomment when SettingsView is implemented
                 <div class="flex items-center gap-2">
                   <el-icon><Setting /></el-icon>
                   <span>Settings</span>
                 </div>
-              </el-dropdown-item>
+              </el-dropdown-item> -->
               <el-dropdown-item divided command="Logout" class="!text-red-500">
                 <div class="flex items-center gap-2">
                   <el-icon><SwitchButton /></el-icon>
@@ -135,9 +135,9 @@ const handleCommand = async (command: string) => {
         closeable: true,
       })
       break
-    case 'Settings':
-      await router.push('/settings')
-      break
+    // case 'Settings':    // TODO: Uncomment when SettingsView is implemented
+    //   await router.push('/settings')
+    //   break
     case 'Logout':
       await authStore.logout()
       break
