@@ -84,7 +84,7 @@ VueSys is a modern, responsive admin dashboard built with Vue 3, offering a comp
 1. Clone the repository
 
 ```bash
-git clone [https://github.com/penn201500/vue3-admin-frontend.git](https://github.com/penn201500/vue3-admin-frontend.git)
+git clone [https://github.com/penn201500/vuesys-vue3-admin-frontend.git](https://github.com/penn201500/vuesys-vue3-admin-frontend.git)
 cd vue3-admin-frontend
 ```
 
