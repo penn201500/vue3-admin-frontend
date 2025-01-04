@@ -49,6 +49,19 @@ VueSys is a modern, responsive admin dashboard built with Vue 3, offering a comp
     -   Searchable audit logs
     - [ ] Filtered audit reports
 
+- [ ] 📧 Email Notifications
+    -   User registration emails
+    -   Password reset emails
+    -   Notification emails
+    -   Customizable email templates
+
+- [ ] Chat System
+    -   Real-time messaging
+    -   Group chat support
+    -   Message history
+    -   Message read status
+    -   File attachments
+
 ## Tech Stack
 
 -   **Vue 3** - Progressive JavaScript Framework
