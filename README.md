@@ -10,6 +10,13 @@ Backend: [VueSys - Admin Dashboard Backend](https://github.com/penn201500/vuesys
 
 ![VueSys - Admin Dashboard](./public/vuesys.png)
 
+## Demo
+
+https://vuesys.netmark.cc/
+
+Username/Password:
+admin/Test@1234
+
 
 ## Features
 
